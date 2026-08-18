@@ -1,15 +1,23 @@
 import 'package:flame/components.dart';
 import 'package:flutter/services.dart';
 import 'package:vanguard_echoes_of_earth/game/core/physics_constants.dart';
+import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
+import 'package:vanguard_echoes_of_earth/game/components/plasma_shockwave.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 
-enum HeroState { idle, run, jump }
+enum HeroState { idle, run, jump, attack }
 
 class DragonHero extends SpriteAnimationGroupComponent<HeroState>
     with HasGameReference<VanguardGame>, KeyboardHandler {
   final Vector2 velocity = Vector2.zero();
   double horizontalInput = 0.0;
   bool isGrounded = false;
+
+  // Combat state variables
+  double _attackTimeRemaining = 0.0;
+  double _plasmaCooldownRemaining = 0.0;
+
+  bool get isAttacking => _attackTimeRemaining > 0.0;
 
   DragonHero({
     super.position,
@@ -22,7 +30,7 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
     size = Vector2.all(64);
     anchor = Anchor.center;
 
-    // Load animations using sequenced frame data (each frame is 64x64px layout horizontally)
+    // Load animations using sequenced frame data
     final idleAnimation = await game.loadSpriteAnimation(
       'dragon_idle.png',
       SpriteAnimationData.sequenced(
@@ -50,10 +58,21 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
       ),
     );
 
+    final attackAnimation = await game.loadSpriteAnimation(
+      'dragon_attack.png',
+      SpriteAnimationData.sequenced(
+        amount: 3,
+        stepTime: CombatConstants.meleeAttackDuration / 3,
+        textureSize: Vector2.all(64),
+        loop: false,
+      ),
+    );
+
     animations = {
       HeroState.idle: idleAnimation,
       HeroState.run: runAnimation,
       HeroState.jump: jumpAnimation,
+      HeroState.attack: attackAnimation,
     };
 
     current = HeroState.idle;
@@ -63,11 +82,16 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
   void update(double dt) {
     super.update(dt);
 
+    // Decrement combat timers
+    _updateTimers(dt);
+
     // Apply gravity
     velocity.y += PhysicsConstants.gravity * dt;
 
-    // Move hero position
-    position.x += horizontalInput * PhysicsConstants.moveSpeed * dt;
+    // Lock horizontal speed during basic attack animation
+    final effectiveHorizontalInput = isAttacking ? 0.0 : horizontalInput;
+    
+    position.x += effectiveHorizontalInput * PhysicsConstants.moveSpeed * dt;
     position.y += velocity.y * dt;
 
     // Collision detection with Ground component
@@ -80,7 +104,6 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
 
     // Check if the hero overlaps horizontally with the platform
     if (position.x + halfWidth > groundLeft && position.x - halfWidth < groundRight) {
-      // Landing: Check if hero is moving down and crosses ground threshold
       if (velocity.y >= 0 &&
           position.y + halfHeight >= groundTop &&
           position.y + halfHeight - velocity.y * dt <= groundTop + 10) {
@@ -89,34 +112,35 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
         isGrounded = true;
       }
     } else {
-      // Hero has walked off the side of the platform
       isGrounded = false;
     }
 
-    // Safety check: if hero falls off the platform / screen, reset
+    // Safety check: if hero falls off the platform, reset
     if (position.y > groundTop + 400 || position.y > game.size.y + 100) {
       resetPosition();
     }
 
-    // Flip sprite scale horizontally based on horizontal velocity / input direction
-    if (horizontalInput < 0 && scale.x > 0) {
-      scale.x = -1;
-    } else if (horizontalInput > 0 && scale.x < 0) {
-      scale.x = 1;
+    // Flip sprite scale horizontally based on movement direction (only when not attacking)
+    if (!isAttacking) {
+      if (horizontalInput < 0 && scale.x > 0) {
+        scale.x = -1;
+      } else if (horizontalInput > 0 && scale.x < 0) {
+        scale.x = 1;
+      }
     }
 
     // Choose active animation state
-    if (!isGrounded) {
-      current = HeroState.jump;
-    } else if (horizontalInput != 0) {
-      current = HeroState.run;
-    } else {
-      current = HeroState.idle;
-    }
+    _updateAnimationState(effectiveHorizontalInput);
   }
 
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    // If melee attack is currently active, lock movement input
+    if (isAttacking) {
+      horizontalInput = 0.0;
+      return true;
+    }
+
     // Reset horizontal movement input
     horizontalInput = 0.0;
 
@@ -140,6 +164,17 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
       isGrounded = false;
     }
 
+    // Check basic attack commands
+    if (keysPressed.contains(LogicalKeyboardKey.keyF) ||
+        keysPressed.contains(LogicalKeyboardKey.keyJ)) {
+      _meleeAttack();
+    }
+
+    // Check plasma shockwave command
+    if (keysPressed.contains(LogicalKeyboardKey.keyK)) {
+      _firePlasmaShockwave();
+    }
+
     return true;
   }
 
@@ -147,5 +182,62 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
     position = Vector2(200, 100);
     velocity.setZero();
     isGrounded = false;
+    _attackTimeRemaining = 0.0;
+    _plasmaCooldownRemaining = 0.0;
+  }
+
+  // Private Combat Helper Methods
+
+  void _updateTimers(double dt) {
+    if (_attackTimeRemaining > 0.0) {
+      _attackTimeRemaining -= dt;
+      if (_attackTimeRemaining < 0.0) {
+        _attackTimeRemaining = 0.0;
+      }
+    }
+
+    if (_plasmaCooldownRemaining > 0.0) {
+      _plasmaCooldownRemaining -= dt;
+      if (_plasmaCooldownRemaining < 0.0) {
+        _plasmaCooldownRemaining = 0.0;
+      }
+    }
+  }
+
+  void _meleeAttack() {
+    if (isAttacking) return;
+    _attackTimeRemaining = CombatConstants.meleeAttackDuration;
+    current = HeroState.attack;
+    animationTicker?.reset();
+  }
+
+  void _firePlasmaShockwave() {
+    if (_plasmaCooldownRemaining > 0.0) return;
+
+    // Spawn shockwave in front of Dragon based on facing direction (scale.x.sign)
+    final direction = scale.x.sign;
+    final spawnOffset = Vector2(direction * 40.0, 0.0);
+    final spawnPos = position + spawnOffset;
+
+    final shockwave = PlasmaShockwave(
+      direction: direction,
+      spawnPosition: spawnPos,
+    );
+
+    game.world.add(shockwave);
+
+    _plasmaCooldownRemaining = CombatConstants.plasmaCooldown;
+  }
+
+  void _updateAnimationState(double currentHorizontalInput) {
+    if (isAttacking) {
+      current = HeroState.attack;
+    } else if (!isGrounded) {
+      current = HeroState.jump;
+    } else if (currentHorizontalInput != 0.0) {
+      current = HeroState.run;
+    } else {
+      current = HeroState.idle;
+    }
   }
 }
