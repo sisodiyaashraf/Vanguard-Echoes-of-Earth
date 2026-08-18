@@ -27,7 +27,7 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
   Future<void> onLoad() async {
     await super.onLoad();
 
-    size = Vector2.all(64);
+    size = Vector2.all(128);
     anchor = Anchor.center;
 
     // Load animations using sequenced frame data
@@ -36,7 +36,7 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
       SpriteAnimationData.sequenced(
         amount: 4,
         stepTime: 0.15,
-        textureSize: Vector2.all(64),
+        textureSize: Vector2.all(128),
       ),
     );
 
@@ -45,7 +45,7 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
       SpriteAnimationData.sequenced(
         amount: 6,
         stepTime: 0.10,
-        textureSize: Vector2.all(64),
+        textureSize: Vector2.all(128),
       ),
     );
 
@@ -54,7 +54,7 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
       SpriteAnimationData.sequenced(
         amount: 2,
         stepTime: 0.20,
-        textureSize: Vector2.all(64),
+        textureSize: Vector2.all(128),
       ),
     );
 
@@ -63,7 +63,7 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
       SpriteAnimationData.sequenced(
         amount: 3,
         stepTime: CombatConstants.meleeAttackDuration / 3,
-        textureSize: Vector2.all(64),
+        textureSize: Vector2.all(128),
         loop: false,
       ),
     );
@@ -216,7 +216,7 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
 
     // Spawn shockwave in front of Dragon based on facing direction (scale.x.sign)
     final direction = scale.x.sign;
-    final spawnOffset = Vector2(direction * 40.0, 0.0);
+    final spawnOffset = Vector2(direction * 80.0, 0.0);
     final spawnPos = position + spawnOffset;
 
     final shockwave = PlasmaShockwave(
