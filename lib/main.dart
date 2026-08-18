@@ -1,6 +1,9 @@
+import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MainApp());
 }
 
@@ -9,10 +12,13 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
+      title: 'Vanguard: Echoes of Earth',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.dark(),
       home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
+        body: GameWidget(
+          game: VanguardGame(),
         ),
       ),
     );
