@@ -4,9 +4,7 @@ import 'package:vanguard_echoes_of_earth/game/components/holo_clone_ambush.dart'
 import 'package:vanguard_echoes_of_earth/game/components/base_hero.dart';
 
 class KitsuneHero extends BaseHero {
-  KitsuneHero({
-    super.position,
-  });
+  KitsuneHero({super.position});
 
   @override
   double get meleeAttackDuration => CombatConstants.meleeAttackDuration;
