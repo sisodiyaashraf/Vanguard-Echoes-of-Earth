@@ -31,6 +31,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
   bool get isTransforming => _transformationTimeRemaining > 0.0;
 
   // Abstract getters/methods for subclasses
+  String get heroName;
   double get meleeAttackDuration;
   double get powerCooldown;
   int get powerEnergyCost;
@@ -141,6 +142,12 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
 
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    // If dialogue overlay is active, gate all movement/actions
+    if (game.isInputGated) {
+      horizontalInput = 0.0;
+      return true;
+    }
+
     // If this hero is not active, do not process input
     if (!isActive) return false;
 

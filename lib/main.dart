@@ -2,6 +2,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/hud_overlay.dart';
+import 'package:vanguard_echoes_of_earth/game/dialogue_overlay.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,7 @@ class MainApp extends StatelessWidget {
           game: VanguardGame(),
           overlayBuilderMap: {
             'hud': (context, game) => GameHud(game: game),
+            'dialogue': (context, game) => DialogueOverlay(game: game),
           },
           initialActiveOverlays: const ['hud'],
         ),

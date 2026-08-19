@@ -11,6 +11,8 @@ import 'package:vanguard_echoes_of_earth/game/components/shark_hero.dart';
 import 'package:vanguard_echoes_of_earth/game/components/kitsune_hero.dart';
 import 'package:vanguard_echoes_of_earth/game/components/active_indicator.dart';
 import 'package:vanguard_echoes_of_earth/game/components/ground.dart';
+import 'package:vanguard_echoes_of_earth/game/story/story_entry.dart';
+import 'package:vanguard_echoes_of_earth/game/story/hero_backstory.dart';
 
 class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
   late final Ground ground;
@@ -19,6 +21,29 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
   late final List<BaseHero> heroes;
   int activeHeroIndex = 0;
   BaseHero get activeHero => heroes[activeHeroIndex];
+
+  // Story / Dialogue State
+  final ValueNotifier<StoryEntry?> currentDialogueNotifier = ValueNotifier<StoryEntry?>(null);
+  final List<StoryEntry> dialogueQueue = [];
+  bool get isInputGated => currentDialogueNotifier.value != null;
+
+  late final Map<String, HeroBackstory> backstories;
+
+  final List<StoryEntry> introSequence = const [
+    StoryEntry(
+      speakerName: 'Narrator',
+      text: 'Deep beneath the planet\'s surface, the Hollow has awakened. A creeping corruption that threatens to consume the Earth.',
+    ),
+    StoryEntry(
+      speakerName: 'Narrator',
+      text: 'From the ashes of the old world, five heroes arise: Dragon, T-Rex, Curator, Shark, and Kitsune.',
+    ),
+    StoryEntry(
+      speakerName: 'Dragon',
+      portraitAssetPath: 'assets/images/characters/Hero 1 Dragon — Kinetic Scales.png',
+      text: 'We are the Vanguard. Let\'s push back this darkness together.',
+    ),
+  ];
 
   // Visual tell above active hero
   late final ActiveIndicator activeIndicator;
@@ -78,19 +103,180 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
     // Configure the camera to follow the hero with a slight zoom for better pixel art scaling
     camera.viewfinder.zoom = 1.5;
     camera.follow(heroes[0]);
+
+    // Initialize Backstories
+    backstories = {
+      'Dragon': HeroBackstory(
+        heroName: 'Dragon',
+        lockedEntries: const [
+          StoryEntry(
+            speakerName: 'Dragon',
+            portraitAssetPath: 'assets/images/characters/Hero 1 Dragon — Kinetic Scales.png',
+            text: 'The rescue mission... The fire was too hot, the smoke too thick. I couldn\'t save my sibling.',
+          ),
+          StoryEntry(
+            speakerName: 'Dragon',
+            portraitAssetPath: 'assets/images/characters/Hero 1 Dragon — Kinetic Scales.png',
+            text: 'I swore I\'d never take flight again. The guilt was a weight I couldn\'t carry.',
+          ),
+          StoryEntry(
+            speakerName: 'Dragon',
+            portraitAssetPath: 'assets/images/characters/Hero 1 Dragon — Kinetic Scales.png',
+            text: 'But now the Hollow threatens everything. I must soar once more, not for glory, but to save them.',
+          ),
+        ],
+      ),
+      'T-Rex': HeroBackstory(
+        heroName: 'T-Rex',
+        lockedEntries: const [
+          StoryEntry(
+            speakerName: 'T-Rex',
+            portraitAssetPath: 'assets/images/characters/Hero 2 T-Rex (Seismic Hammer).png',
+            text: 'I was too ambitious. I ordered the dig to continue, ignoring the geological warnings.',
+          ),
+          StoryEntry(
+            speakerName: 'T-Rex',
+            portraitAssetPath: 'assets/images/characters/Hero 2 T-Rex (Seismic Hammer).png',
+            text: 'The cave-in... My team was trapped. I escaped, but my reputation and soul were buried there.',
+          ),
+          StoryEntry(
+            speakerName: 'T-Rex',
+            portraitAssetPath: 'assets/images/characters/Hero 2 T-Rex (Seismic Hammer).png',
+            text: 'Now, I will stand as an unbreakable shield. No one else gets left behind on my watch.',
+          ),
+        ],
+      ),
+      'Curator': HeroBackstory(
+        heroName: 'Curator',
+        lockedEntries: const [
+          StoryEntry(
+            speakerName: 'Curator',
+            portraitAssetPath: 'assets/images/characters/Curator (Temporal Nanotech).png',
+            text: 'To free the hostage from the temple, I triggered the relic\'s ancient curse.',
+          ),
+          StoryEntry(
+            speakerName: 'Curator',
+            portraitAssetPath: 'assets/images/characters/Curator (Temporal Nanotech).png',
+            text: 'The price is my own mind. Every day, the faces of my past fade a little more.',
+          ),
+          StoryEntry(
+            speakerName: 'Curator',
+            portraitAssetPath: 'assets/images/characters/Curator (Temporal Nanotech).png',
+            text: 'I must fight to hold onto who I am, to keep my humanity before the memories are completely gone.',
+          ),
+        ],
+      ),
+      'Shark': HeroBackstory(
+        heroName: 'Shark',
+        lockedEntries: const [
+          StoryEntry(
+            speakerName: 'Shark',
+            portraitAssetPath: 'assets/images/characters/Shark (Hydrokinetic Agility).png',
+            text: 'The submarine hull cracked. The dark, cold abyss rushed in. I was the sole survivor.',
+          ),
+          StoryEntry(
+            speakerName: 'Shark',
+            portraitAssetPath: 'assets/images/characters/Shark (Hydrokinetic Agility).png',
+            text: 'Ever since, the depth of the ocean terrifies me. The thalassophobia is paralyzing.',
+          ),
+          StoryEntry(
+            speakerName: 'Shark',
+            portraitAssetPath: 'assets/images/characters/Shark (Hydrokinetic Agility).png',
+            text: 'But my team needs a protector. I will conquer this fear and conquer the tides.',
+          ),
+        ],
+      ),
+      'Kitsune': HeroBackstory(
+        heroName: 'Kitsune',
+        lockedEntries: const [
+          StoryEntry(
+            speakerName: 'Kitsune',
+            portraitAssetPath: 'assets/images/characters/Kitsune (Holographic).png',
+            text: 'An orphan on the neon streets, nobody cared. I survived by stealing and deceiving.',
+          ),
+          StoryEntry(
+            speakerName: 'Kitsune',
+            portraitAssetPath: 'assets/images/characters/Kitsune (Holographic).png',
+            text: 'Illusions became my armor. If they only see a mask, they can never hurt the real me.',
+          ),
+          StoryEntry(
+            speakerName: 'Kitsune',
+            portraitAssetPath: 'assets/images/characters/Kitsune (Holographic).png',
+            text: 'These heroes... they look at me with trust. Maybe it\'s time to drop the illusions.',
+          ),
+        ],
+      ),
+    };
+
+    // Play intro sequence
+    showDialogue(introSequence);
   }
 
   @override
   KeyEventResult onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
     if (event is KeyDownEvent) {
-      // Toggle / switch between heroes using Tab or Q
+      // 1. If dialogue is active, handle Enter key to advance dialogue and gate everything else
+      if (isInputGated) {
+        if (keysPressed.contains(LogicalKeyboardKey.enter)) {
+          advanceDialogue();
+        }
+        return KeyEventResult.handled;
+      }
+
+      // 2. Debug key 'B' to unlock and display backstory
+      if (keysPressed.contains(LogicalKeyboardKey.keyB)) {
+        unlockCurrentHeroBackstory();
+        return KeyEventResult.handled;
+      }
+
+      // 3. Toggle / switch between heroes using Tab or Q
       if (keysPressed.contains(LogicalKeyboardKey.tab) ||
           keysPressed.contains(LogicalKeyboardKey.keyQ)) {
         cycleHero();
         return KeyEventResult.handled;
       }
     }
+
+    if (isInputGated) {
+      return KeyEventResult.handled;
+    }
+
     return super.onKeyEvent(event, keysPressed);
+  }
+
+  void showDialogue(List<StoryEntry> entries) {
+    dialogueQueue.addAll(entries);
+    if (currentDialogueNotifier.value == null && dialogueQueue.isNotEmpty) {
+      currentDialogueNotifier.value = dialogueQueue.removeAt(0);
+      overlays.add('dialogue');
+    }
+  }
+
+  void advanceDialogue() {
+    if (dialogueQueue.isNotEmpty) {
+      currentDialogueNotifier.value = dialogueQueue.removeAt(0);
+    } else {
+      currentDialogueNotifier.value = null;
+      overlays.remove('dialogue');
+    }
+  }
+
+  void unlockCurrentHeroBackstory() {
+    final hero = activeHero;
+    final backstory = backstories[hero.heroName];
+    if (backstory != null) {
+      final entry = backstory.unlockNext();
+      if (entry != null) {
+        showDialogue([entry]);
+      } else {
+        showDialogue([
+          StoryEntry(
+            speakerName: 'System',
+            text: 'All backstory entries for ${hero.heroName} have already been unlocked.',
+          )
+        ]);
+      }
+    }
   }
 
   void cycleHero() {

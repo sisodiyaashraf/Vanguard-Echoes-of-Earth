@@ -9,6 +9,9 @@ class SharkHero extends BaseHero {
   });
 
   @override
+  String get heroName => 'Shark';
+
+  @override
   double get meleeAttackDuration => CombatConstants.meleeAttackDuration;
 
   @override
@@ -50,7 +53,7 @@ class SharkHero extends BaseHero {
         amount: 2,
         stepTime: 0.20,
         textureSize: Vector2(500, 500),
-        amountPerRow: 3,
+        amountPerRow: 2,
       ),
     );
 

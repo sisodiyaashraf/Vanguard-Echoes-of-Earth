@@ -9,6 +9,9 @@ class DragonHero extends BaseHero {
   });
 
   @override
+  String get heroName => 'Dragon';
+
+  @override
   double get meleeAttackDuration => CombatConstants.meleeAttackDuration;
 
   @override

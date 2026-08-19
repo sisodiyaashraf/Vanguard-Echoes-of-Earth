@@ -7,6 +7,9 @@ class KitsuneHero extends BaseHero {
   KitsuneHero({super.position});
 
   @override
+  String get heroName => 'Kitsune';
+
+  @override
   double get meleeAttackDuration => CombatConstants.meleeAttackDuration;
 
   @override
@@ -48,7 +51,7 @@ class KitsuneHero extends BaseHero {
         amount: 2,
         stepTime: 0.20,
         textureSize: Vector2(500, 500),
-        amountPerRow: 3,
+        amountPerRow: 2,
       ),
     );
 
