@@ -63,15 +63,15 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
             Container(
               padding: const EdgeInsets.all(12.0),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.55),
+                color: Colors.black.withValues(alpha: 0.55),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.12),
+                  color: Colors.white.withValues(alpha: 0.12),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.4),
+                    color: Colors.black.withValues(alpha: 0.4),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -182,7 +182,7 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
                   sprite: widget.game.meleeSprite,
                   cooldownPercent: 0,
                   cooldownText: '',
-                  glowColor: Colors.orange.withOpacity(0.5),
+                  glowColor: Colors.orange.withValues(alpha: 0.5),
                   isReady: !hero.isAttacking,
                 ),
                 const SizedBox(width: 10),
@@ -192,7 +192,7 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
                   sprite: _getPowerSprite(widget.game),
                   cooldownPercent: powerCooldownPercent,
                   cooldownText: powerCooldown > 0 ? '${powerCooldown.toStringAsFixed(1)}s' : '',
-                  glowColor: const Color(0xFF9C27B0).withOpacity(0.5),
+                  glowColor: const Color(0xFF9C27B0).withValues(alpha: 0.5),
                   isReady: powerCooldown <= 0 && stats.currentEnergy >= hero.powerEnergyCost,
                 ),
               ],
@@ -301,7 +301,7 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
               ]
             : [],
         border: Border.all(
-          color: isReady ? Colors.white.withOpacity(0.6) : Colors.white.withOpacity(0.15),
+          color: isReady ? Colors.white.withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.15),
           width: 1.5,
         ),
       ),
@@ -323,7 +323,7 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
                   alignment: Alignment.bottomCenter,
                   heightFactor: cooldownPercent,
                   child: Container(
-                    color: Colors.black.withOpacity(0.65),
+                    color: Colors.black.withValues(alpha: 0.65),
                   ),
                 ),
               ),

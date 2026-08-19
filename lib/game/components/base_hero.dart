@@ -54,18 +54,26 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     double stepTime, {
     bool loop = false,
   }) async {
-    final image = await game.images.load(fileName);
-    final frameWidth = image.width / frameCount;
-    final frameHeight = image.height.toDouble();
-    
-    final sprites = List.generate(frameCount, (i) {
-      return Sprite(
-        image,
-        srcPosition: Vector2(i * frameWidth, 0),
-        srcSize: Vector2(frameWidth, frameHeight),
-      );
-    });
-    return SpriteAnimation.spriteList(sprites, stepTime: stepTime, loop: loop);
+    try {
+      final image = await game.images.load(fileName);
+      final frameWidth = image.width / frameCount;
+      final frameHeight = image.height.toDouble();
+      
+      final sprites = List.generate(frameCount, (i) {
+        return Sprite(
+          image,
+          srcPosition: Vector2(i * frameWidth, 0),
+          srcSize: Vector2(frameWidth, frameHeight),
+        );
+      });
+      return SpriteAnimation.spriteList(sprites, stepTime: stepTime, loop: loop);
+    } catch (e, stack) {
+      // ignore: avoid_print
+      print('ERROR: Failed to load animation sheet "$fileName". Details: $e');
+      // ignore: avoid_print
+      print(stack);
+      rethrow;
+    }
   }
 
   @override

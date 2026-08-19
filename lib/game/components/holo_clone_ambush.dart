@@ -34,7 +34,7 @@ class HoloClone extends SpriteAnimationComponent with HasGameReference<VanguardG
     );
 
     // Make the clone translucent (decoy)
-    paint.color = const Color(0xFFFFFFFF).withOpacity(0.5);
+    paint.color = const Color(0xFFFFFFFF).withValues(alpha: 0.5);
   }
 
   @override
