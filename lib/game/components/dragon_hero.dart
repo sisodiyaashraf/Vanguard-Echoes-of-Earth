@@ -4,6 +4,7 @@ import 'package:vanguard_echoes_of_earth/game/core/physics_constants.dart';
 import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
 import 'package:vanguard_echoes_of_earth/game/components/plasma_shockwave.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
+import 'package:vanguard_echoes_of_earth/game/core/hero_stats.dart';
 
 enum HeroState { idle, run, jump, attack }
 
@@ -13,11 +14,16 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
   double horizontalInput = 0.0;
   bool isGrounded = false;
 
+  // Stats & Regen
+  final HeroStats stats = HeroStats();
+  double _regenAccumulator = 0.0;
+
   // Combat state variables
   double _attackTimeRemaining = 0.0;
   double _plasmaCooldownRemaining = 0.0;
 
   bool get isAttacking => _attackTimeRemaining > 0.0;
+  double get plasmaCooldownRemaining => _plasmaCooldownRemaining;
 
   DragonHero({
     super.position,
@@ -84,6 +90,13 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
 
     // Decrement combat timers
     _updateTimers(dt);
+
+    // Passive energy regen (5 energy per second)
+    _regenAccumulator += dt;
+    if (_regenAccumulator >= 1.0) {
+      stats.regenEnergy(5);
+      _regenAccumulator -= 1.0;
+    }
 
     // Apply gravity
     velocity.y += PhysicsConstants.gravity * dt;
@@ -175,6 +188,11 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
       _firePlasmaShockwave();
     }
 
+    // Check debug takeDamage command
+    if (event is KeyDownEvent && keysPressed.contains(LogicalKeyboardKey.keyH)) {
+      stats.takeDamage(10);
+    }
+
     return true;
   }
 
@@ -213,6 +231,9 @@ class DragonHero extends SpriteAnimationGroupComponent<HeroState>
 
   void _firePlasmaShockwave() {
     if (_plasmaCooldownRemaining > 0.0) return;
+
+    // Check and spend energy
+    if (!stats.spendEnergy(25)) return;
 
     // Spawn shockwave in front of Dragon based on facing direction (scale.x.sign)
     final direction = scale.x.sign;
