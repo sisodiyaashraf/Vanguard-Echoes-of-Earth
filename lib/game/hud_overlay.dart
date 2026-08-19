@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flame/widgets.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
-import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
 
 class GameHud extends StatefulWidget {
   final VanguardGame game;
@@ -37,20 +36,20 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    // If the game or the hero isn't fully loaded yet, render nothing.
+    // If the game or the active hero isn't fully loaded yet, render nothing.
     if (!widget.game.isLoaded) {
       return const SizedBox.shrink();
     }
 
-    final hero = widget.game.hero;
+    final hero = widget.game.activeHero;
     final stats = hero.stats;
     
     final healthPercent = (stats.currentHealth / stats.maxHealth).clamp(0.0, 1.0);
     final energyPercent = (stats.currentEnergy / stats.maxEnergy).clamp(0.0, 1.0);
     
-    final plasmaCooldown = hero.plasmaCooldownRemaining;
-    final plasmaMaxCooldown = CombatConstants.plasmaCooldown;
-    final plasmaCooldownPercent = (plasmaCooldown / plasmaMaxCooldown).clamp(0.0, 1.0);
+    final powerCooldown = hero.powerCooldownRemaining;
+    final powerMaxCooldown = hero.powerCooldown;
+    final powerCooldownPercent = (powerCooldown / powerMaxCooldown).clamp(0.0, 1.0);
 
     return Align(
       alignment: Alignment.topLeft,
@@ -155,13 +154,13 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
                 ),
                 const SizedBox(width: 10),
 
-                // Plasma Shockwave Card
+                // Power Ability Card
                 _buildAbilityIcon(
-                  sprite: widget.game.plasmaSprite,
-                  cooldownPercent: plasmaCooldownPercent,
-                  cooldownText: plasmaCooldown > 0 ? '${plasmaCooldown.toStringAsFixed(1)}s' : '',
+                  sprite: _getPowerSprite(widget.game),
+                  cooldownPercent: powerCooldownPercent,
+                  cooldownText: powerCooldown > 0 ? '${powerCooldown.toStringAsFixed(1)}s' : '',
                   glowColor: const Color(0xFF9C27B0).withOpacity(0.5),
-                  isReady: plasmaCooldown <= 0 && stats.currentEnergy >= 25,
+                  isReady: powerCooldown <= 0 && stats.currentEnergy >= hero.powerEnergyCost,
                 ),
               ],
             ),
@@ -169,6 +168,23 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
         ),
       ),
     );
+  }
+
+  Sprite _getPowerSprite(VanguardGame game) {
+    switch (game.activeHeroIndex) {
+      case 0: // Dragon
+        return game.plasmaSprite;
+      case 1: // T-Rex
+        return game.meleeSprite;
+      case 2: // Curator
+        return game.plasmaSprite;
+      case 3: // Shark
+        return game.runSprite;
+      case 4: // Kitsune
+        return game.plasmaSprite;
+      default:
+        return game.plasmaSprite;
+    }
   }
 
   // Helper builder for custom health/energy progress bars
