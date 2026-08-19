@@ -59,11 +59,19 @@ class DragonHero extends BaseHero {
       ),
     );
 
+    // Load Superpower casting animation (3 frames)
+    final superpowerAnimation = await loadHorizontalAnimation(
+      'characters/Dragon — Kinetic Scale(superpower).png',
+      3,
+      0.15,
+    );
+
     animations = {
       HeroState.idle: idleAnimation,
       HeroState.run: runAnimation,
       HeroState.jump: jumpAnimation,
       HeroState.attack: attackAnimation,
+      HeroState.superpower: superpowerAnimation,
     };
 
     current = HeroState.idle;

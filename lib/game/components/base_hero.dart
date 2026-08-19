@@ -4,7 +4,7 @@ import 'package:vanguard_echoes_of_earth/game/core/physics_constants.dart';
 import 'package:vanguard_echoes_of_earth/game/core/hero_stats.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 
-enum HeroState { idle, run, jump, attack }
+enum HeroState { idle, run, jump, attack, superpower, transformation }
 
 abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     with HasGameReference<VanguardGame>, KeyboardHandler {
@@ -19,12 +19,16 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
   // Active status for switching input gating
   bool isActive = false;
 
-  // Combat state variables
+  // Combat/State variables
   double _attackTimeRemaining = 0.0;
   double _powerCooldownRemaining = 0.0;
+  double _superpowerTimeRemaining = 0.0;
+  double _transformationTimeRemaining = 0.0;
 
   bool get isAttacking => _attackTimeRemaining > 0.0;
   double get powerCooldownRemaining => _powerCooldownRemaining;
+  bool get isSuperpowerActive => _superpowerTimeRemaining > 0.0;
+  bool get isTransforming => _transformationTimeRemaining > 0.0;
 
   // Abstract getters/methods for subclasses
   double get meleeAttackDuration;
@@ -43,11 +47,32 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     anchor = Anchor.center;
   }
 
+  // Helper utility to load horizontal animation sheets of varying dimensions
+  Future<SpriteAnimation> loadHorizontalAnimation(
+    String fileName,
+    int frameCount,
+    double stepTime, {
+    bool loop = false,
+  }) async {
+    final image = await game.images.load(fileName);
+    final frameWidth = image.width / frameCount;
+    final frameHeight = image.height.toDouble();
+    
+    final sprites = List.generate(frameCount, (i) {
+      return Sprite(
+        image,
+        srcPosition: Vector2(i * frameWidth, 0),
+        srcSize: Vector2(frameWidth, frameHeight),
+      );
+    });
+    return SpriteAnimation.spriteList(sprites, stepTime: stepTime, loop: loop);
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
 
-    // Decrement combat timers
+    // Decrement combat and state timers
     _updateTimers(dt);
 
     // Passive energy regen (5 energy per second)
@@ -60,8 +85,9 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     // Apply gravity
     velocity.y += PhysicsConstants.gravity * dt;
 
-    // Lock horizontal speed during basic attack animation
-    final effectiveHorizontalInput = isAttacking ? 0.0 : horizontalInput;
+    // Lock horizontal speed during basic attack, power casting, or transformation
+    final isLocked = isAttacking || isSuperpowerActive || isTransforming;
+    final effectiveHorizontalInput = isLocked ? 0.0 : horizontalInput;
     
     position.x += effectiveHorizontalInput * PhysicsConstants.moveSpeed * dt;
     position.y += velocity.y * dt;
@@ -92,8 +118,8 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
       resetPosition();
     }
 
-    // Flip sprite scale horizontally based on movement direction (only when not attacking)
-    if (!isAttacking) {
+    // Flip sprite scale horizontally based on movement direction (only when not in locked states)
+    if (!isLocked) {
       if (horizontalInput < 0 && scale.x > 0) {
         scale.x = -1;
       } else if (horizontalInput > 0 && scale.x < 0) {
@@ -110,8 +136,8 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     // If this hero is not active, do not process input
     if (!isActive) return false;
 
-    // If melee attack is currently active, lock movement input
-    if (isAttacking) {
+    // If locked in action, ignore movement keys but consume input
+    if (isAttacking || isSuperpowerActive || isTransforming) {
       horizontalInput = 0.0;
       return true;
     }
@@ -150,6 +176,11 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
       _firePower();
     }
 
+    // Check transformation command (key T)
+    if (keysPressed.contains(LogicalKeyboardKey.keyT)) {
+      _transform();
+    }
+
     // Check debug takeDamage command (key H)
     if (event is KeyDownEvent && keysPressed.contains(LogicalKeyboardKey.keyH)) {
       stats.takeDamage(10);
@@ -158,12 +189,23 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     return true;
   }
 
+  void _transform() {
+    if (isTransforming || isSuperpowerActive || isAttacking) return;
+    if (animations?[HeroState.transformation] != null) {
+      _transformationTimeRemaining = 0.60; // 4 frames at 0.15s
+      current = HeroState.transformation;
+      animationTicker?.reset();
+    }
+  }
+
   void resetPosition() {
     position = Vector2(200, 100);
     velocity.setZero();
     isGrounded = false;
     _attackTimeRemaining = 0.0;
     _powerCooldownRemaining = 0.0;
+    _superpowerTimeRemaining = 0.0;
+    _transformationTimeRemaining = 0.0;
   }
 
   // Combat Helper Methods
@@ -180,6 +222,20 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
       _powerCooldownRemaining -= dt;
       if (_powerCooldownRemaining < 0.0) {
         _powerCooldownRemaining = 0.0;
+      }
+    }
+
+    if (_superpowerTimeRemaining > 0.0) {
+      _superpowerTimeRemaining -= dt;
+      if (_superpowerTimeRemaining < 0.0) {
+        _superpowerTimeRemaining = 0.0;
+      }
+    }
+
+    if (_transformationTimeRemaining > 0.0) {
+      _transformationTimeRemaining -= dt;
+      if (_transformationTimeRemaining < 0.0) {
+        _transformationTimeRemaining = 0.0;
       }
     }
   }
@@ -199,11 +255,19 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
 
     spawnPower();
 
+    _superpowerTimeRemaining = 0.45; // 3 frames * 0.15s = 0.45s
+    current = HeroState.superpower;
+    animationTicker?.reset();
+
     _powerCooldownRemaining = powerCooldown;
   }
 
   void _updateAnimationState(double currentHorizontalInput) {
-    if (isAttacking) {
+    if (isTransforming) {
+      current = HeroState.transformation;
+    } else if (isSuperpowerActive) {
+      current = HeroState.superpower;
+    } else if (isAttacking) {
       current = HeroState.attack;
     } else if (!isGrounded) {
       current = HeroState.jump;

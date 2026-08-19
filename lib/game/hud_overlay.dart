@@ -81,6 +81,39 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // --- LOGO & TITLE ---
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.asset(
+                          'assets/app_icon/app_icon.jpg',
+                          width: 24,
+                          height: 24,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'VANGUARD',
+                        style: TextStyle(
+                          color: Color(0xFF00FFCC),
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.5,
+                          shadows: [
+                            Shadow(
+                              color: Color(0xFF00FFCC),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Divider(color: Colors.white10, height: 16),
+
                   // --- HEALTH BAR ---
                   Row(
                     mainAxisSize: MainAxisSize.min,

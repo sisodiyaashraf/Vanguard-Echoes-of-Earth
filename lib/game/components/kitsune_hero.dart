@@ -67,11 +67,27 @@ class KitsuneHero extends BaseHero {
       ),
     );
 
+    // Load Superpower casting animation (3 frames)
+    final superpowerAnimation = await loadHorizontalAnimation(
+      'characters/kitsune holographic (superpower).png',
+      3,
+      0.15,
+    );
+
+    // Load Transformation animation (4 frames)
+    final transformationAnimation = await loadHorizontalAnimation(
+      'characters/kitsune holographic (transformation).png',
+      4,
+      0.15,
+    );
+
     animations = {
       HeroState.idle: idleAnimation,
       HeroState.run: runAnimation,
       HeroState.jump: jumpAnimation,
       HeroState.attack: attackAnimation,
+      HeroState.superpower: superpowerAnimation,
+      HeroState.transformation: transformationAnimation,
     };
 
     current = HeroState.idle;
