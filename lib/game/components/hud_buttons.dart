@@ -69,8 +69,9 @@ class TextButtonComponent extends PositionComponent {
       textRenderer: TextPaint(
         style: const TextStyle(
           color: Color(0xFF00FFCC),
-          fontSize: 12,
+          fontSize: 8,
           fontWeight: FontWeight.bold,
+          fontFamily: 'Press Start 2P',
         ),
       ),
       anchor: Anchor.center,

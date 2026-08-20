@@ -86,7 +86,7 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
 
     // Set up camera with a fixed resolution viewport and viewfinder visible game size
     camera = CameraComponent.withFixedResolution(width: 1280, height: 720);
-    camera.viewfinder.visibleGameSize = Vector2(1000, 600);
+    camera.viewfinder.visibleGameSize = Vector2(640, 360);
 
     // Initialize background parallax first to render behind everything
     parallaxBackground = ParallaxBackground();

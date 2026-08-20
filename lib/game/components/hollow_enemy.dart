@@ -14,6 +14,7 @@ import 'package:vanguard_echoes_of_earth/game/components/temporal_wave.dart';
 import 'package:vanguard_echoes_of_earth/game/components/water_blade_barrage.dart';
 import 'package:vanguard_echoes_of_earth/game/components/platform.dart';
 import 'package:vanguard_echoes_of_earth/game/components/element_particle.dart';
+import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 
 class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     with HasGameReference<VanguardGame>, CollisionCallbacks {
@@ -270,16 +271,16 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
 
     // Play hit SFX
     if (source is MeleeStrike) {
-      FlameAudio.play('melee_hit.wav');
+      FlameAudio.play('melee_hit.wav', volume: SaveManager.getSfxVolume());
     } else {
-      FlameAudio.play('enemy_hit.wav');
+      FlameAudio.play('enemy_hit.wav', volume: SaveManager.getSfxVolume());
     }
 
     if (health <= 0) {
       current = EnemyAnimState.dead;
       _bodyHitbox.collisionType = CollisionType.inactive;
       _deathTimer = 0.0;
-      FlameAudio.play('enemy_death.wav');
+      FlameAudio.play('enemy_death.wav', volume: SaveManager.getSfxVolume());
     }
   }
 

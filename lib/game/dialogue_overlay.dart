@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/story/story_entry.dart';
 
@@ -27,16 +28,16 @@ class DialogueOverlay extends StatelessWidget {
             behavior: HitTestBehavior.opaque,
             child: Container(
               width: double.infinity,
-              height: 220,
-              color: Colors.transparent, // Capture taps across the bottom screen area
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              height: 180,
+              color: Colors.transparent,
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
               child: Center(
                 child: Container(
                   constraints: const BoxConstraints(maxWidth: 800),
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(14.0),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: const Color(0xFF00FFCC).withValues(alpha: 0.4),
                       width: 2.0,
@@ -54,11 +55,11 @@ class DialogueOverlay extends StatelessWidget {
                     children: [
                       if (!isNarration) ...[
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                           child: Container(
-                            width: 80,
-                            height: 80,
-                            color: Colors.grey[955],
+                            width: 64,
+                            height: 64,
+                            color: Colors.grey[900],
                             child: Image.asset(
                               currentDialogue.portraitAssetPath!,
                               fit: BoxFit.cover,
@@ -66,13 +67,13 @@ class DialogueOverlay extends StatelessWidget {
                                 return const Icon(
                                   Icons.account_circle,
                                   color: Color(0xFF00FFCC),
-                                  size: 40,
+                                  size: 32,
                                 );
                               },
                             ),
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(width: 14),
                       ],
                       Expanded(
                         child: Column(
@@ -81,15 +82,14 @@ class DialogueOverlay extends StatelessWidget {
                             if (!isNarration)
                               Text(
                                 currentDialogue.speakerName.toUpperCase(),
-                                style: const TextStyle(
-                                  color: Color(0xFF00FFCC),
-                                  fontSize: 15,
+                                style: GoogleFonts.pressStart2p(
+                                  color: const Color(0xFF00FFCC),
+                                  fontSize: 10,
                                   fontWeight: FontWeight.bold,
-                                  letterSpacing: 1.5,
                                   shadows: [
-                                    Shadow(
+                                    const Shadow(
                                       color: Color(0xFF00FFCC),
-                                      blurRadius: 4,
+                                      blurRadius: 2,
                                     ),
                                   ],
                                 ),
@@ -97,12 +97,11 @@ class DialogueOverlay extends StatelessWidget {
                             else
                               Text(
                                 currentDialogue.speakerName.toUpperCase(),
-                                style: TextStyle(
+                                style: GoogleFonts.pressStart2p(
                                   color: Colors.grey[500],
-                                  fontSize: 13,
+                                  fontSize: 8,
                                   fontWeight: FontWeight.bold,
                                   fontStyle: FontStyle.italic,
-                                  letterSpacing: 1.5,
                                 ),
                               ),
                             const SizedBox(height: 8),
@@ -111,10 +110,10 @@ class DialogueOverlay extends StatelessWidget {
                                 physics: const BouncingScrollPhysics(),
                                 child: Text(
                                   currentDialogue.text,
-                                  style: TextStyle(
+                                  style: GoogleFonts.vt323(
                                     color: Colors.white.withValues(alpha: 0.92),
-                                    fontSize: 14,
-                                    height: 1.45,
+                                    fontSize: 16,
+                                    height: 1.25,
                                     fontStyle: isNarration ? FontStyle.italic : FontStyle.normal,
                                   ),
                                 ),
@@ -128,16 +127,15 @@ class DialogueOverlay extends StatelessWidget {
                                 children: [
                                   Icon(
                                     Icons.play_arrow,
-                                    size: 12,
+                                    size: 10,
                                     color: Colors.white.withValues(alpha: 0.4),
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
                                     'ENTER or Tap to continue',
-                                    style: TextStyle(
+                                    style: GoogleFonts.pressStart2p(
                                       color: Colors.white.withValues(alpha: 0.35),
-                                      fontSize: 10,
-                                      fontStyle: FontStyle.italic,
+                                      fontSize: 6,
                                     ),
                                   ),
                                 ],

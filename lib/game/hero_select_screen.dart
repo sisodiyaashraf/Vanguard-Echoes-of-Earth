@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class HeroOption {
   final String id;
@@ -57,8 +58,8 @@ class HeroSelectScreen extends StatelessWidget {
     ),
     HeroOption(
       id: 'team',
-      name: 'TEAM CAMPAIGN',
-      powerName: 'Full Squad Mission',
+      name: 'TEAM MISSION',
+      powerName: 'Full Squad Campaign',
       imagePath: 'assets/images/characters/UI elements (icons, not animated).png',
       themeColor: Color(0xFFFF007F),
     ),
@@ -75,11 +76,11 @@ class HeroSelectScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF00FFCC)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'SELECT HERO / CAMPAIGN',
-          style: TextStyle(
-            color: Color(0xFF00FFCC),
-            fontSize: 18,
+        title: Text(
+          'SELECT CAMPAIGN',
+          style: GoogleFonts.pressStart2p(
+            color: const Color(0xFF00FFCC),
+            fontSize: 14,
             fontWeight: FontWeight.bold,
             letterSpacing: 2.0,
           ),
@@ -88,7 +89,7 @@ class HeroSelectScreen extends StatelessWidget {
       ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 960),
             child: GridView.builder(
@@ -98,7 +99,7 @@ class HeroSelectScreen extends StatelessWidget {
                 crossAxisCount: 3,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: 1.1,
+                childAspectRatio: 1.2,
               ),
               itemCount: options.length,
               itemBuilder: (context, index) {
@@ -121,7 +122,7 @@ class HeroSelectScreen extends StatelessWidget {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: opt.themeColor.withValues(alpha: 0.1),
+                          color: opt.themeColor.withValues(alpha: 0.15),
                           blurRadius: 10,
                           spreadRadius: 1,
                         ),
@@ -132,7 +133,6 @@ class HeroSelectScreen extends StatelessWidget {
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
-                          // Hero Visual
                           Opacity(
                             opacity: 0.8,
                             child: Image.asset(
@@ -141,7 +141,6 @@ class HeroSelectScreen extends StatelessWidget {
                               alignment: Alignment.topCenter,
                             ),
                           ),
-                          // Dark Gradient Bottom overlay
                           Container(
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -154,29 +153,27 @@ class HeroSelectScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          // Text Content
                           Padding(
-                            padding: const EdgeInsets.all(16.0),
+                            padding: const EdgeInsets.all(12.0),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.end,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   opt.name,
-                                  style: TextStyle(
+                                  style: GoogleFonts.pressStart2p(
                                     color: opt.themeColor,
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 18,
-                                    letterSpacing: 1.5,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 10,
+                                    letterSpacing: 1.0,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   opt.powerName.toUpperCase(),
-                                  style: const TextStyle(
+                                  style: GoogleFonts.vt323(
                                     color: Colors.white70,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
                                     letterSpacing: 1.0,
                                   ),
                                 ),

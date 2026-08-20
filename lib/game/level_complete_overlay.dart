@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/levels/level_registry.dart';
 
@@ -9,7 +10,6 @@ class LevelCompleteOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if there is a next level configured
     final currentConfig = game.currentLevelConfig;
     int nextLevelIndex = -1;
     if (currentConfig != null) {
@@ -50,15 +50,15 @@ class LevelCompleteOverlay extends StatelessWidget {
                 size: 54,
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'MISSION CLEAR',
-                style: TextStyle(
-                  color: Color(0xFF00FFCC),
-                  fontSize: 22,
+                style: GoogleFonts.pressStart2p(
+                  color: const Color(0xFF00FFCC),
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 2.0,
+                  letterSpacing: 1.0,
                   shadows: [
-                    Shadow(
+                    const Shadow(
                       color: Color(0xFF00FFCC),
                       blurRadius: 8,
                     ),
@@ -68,10 +68,11 @@ class LevelCompleteOverlay extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 'Successfully completed:\n"${currentConfig?.displayName ?? 'Mission'}"',
-                style: const TextStyle(
+                style: GoogleFonts.vt323(
                   color: Colors.white,
-                  fontSize: 15,
-                  height: 1.4,
+                  fontSize: 16,
+                  height: 1.3,
+                  letterSpacing: 0.5,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -90,12 +91,15 @@ class LevelCompleteOverlay extends StatelessWidget {
                     game.overlays.remove('level_complete');
                     game.loadLevel(LevelRegistry.levels[nextLevelIndex]);
                   },
-                  child: const Text(
+                  child: Text(
                     'NEXT LEVEL',
-                    style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.0),
+                    style: GoogleFonts.pressStart2p(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
               ],
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
@@ -109,7 +113,13 @@ class LevelCompleteOverlay extends StatelessWidget {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: const Text('LEVEL SELECT', style: TextStyle(letterSpacing: 1.0)),
+                child: Text(
+                  'LEVEL SELECT',
+                  style: GoogleFonts.pressStart2p(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),

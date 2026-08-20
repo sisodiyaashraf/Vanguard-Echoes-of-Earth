@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 import 'package:vanguard_echoes_of_earth/game/levels/level_registry.dart';
 
@@ -42,9 +43,9 @@ class LevelSelectScreen extends StatelessWidget {
         ),
         title: Text(
           '${heroId.toUpperCase()} MISSIONS',
-          style: const TextStyle(
-            color: Color(0xFF00FFCC),
-            fontSize: 20,
+          style: GoogleFonts.pressStart2p(
+            color: const Color(0xFF00FFCC),
+            fontSize: 12,
             fontWeight: FontWeight.bold,
             letterSpacing: 2.0,
           ),
@@ -66,7 +67,6 @@ class LevelSelectScreen extends StatelessWidget {
                   ? 'LVL ${levelNum.padLeft(2, '0')}'
                   : 'MISSION';
 
-              // Lock Gating Logic
               final isUnlocked = index == 0 || SaveManager.isLevelCompleted(filteredLevels[index - 1].id);
               final isCompleted = SaveManager.isLevelCompleted(level.id);
 
@@ -90,38 +90,39 @@ class LevelSelectScreen extends StatelessWidget {
                           ? const Icon(Icons.check_circle, color: Color(0xFF00FFCC), size: 28)
                           : Icon(Icons.play_circle_fill, color: heroColor, size: 28))
                       : const Icon(Icons.lock, color: Colors.white24, size: 28),
-                  title: Row(
+                  title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '$formattedLvl - ',
-                        style: TextStyle(
+                        formattedLvl,
+                        style: GoogleFonts.pressStart2p(
                           color: isUnlocked ? heroColor : Colors.white24,
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 9,
                         ),
                       ),
-                      Expanded(
-                        child: Text(
-                          level.displayName.toUpperCase(),
-                          style: TextStyle(
-                            color: isUnlocked ? Colors.white : Colors.white24,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            letterSpacing: 1.0,
-                          ),
+                      const SizedBox(height: 6),
+                      Text(
+                        level.displayName.toUpperCase(),
+                        style: GoogleFonts.pressStart2p(
+                          color: isUnlocked ? Colors.white : Colors.white24,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                          letterSpacing: 1.0,
                         ),
                       ),
                     ],
                   ),
                   subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 4),
+                    padding: const EdgeInsets.only(top: 6),
                     child: Text(
                       level.heroId == 'team'
                           ? 'Full squad campaign. Switch heroes mid-battle.'
                           : 'Solo deployment for ${level.heroId.toUpperCase()}.',
-                      style: TextStyle(
+                      style: GoogleFonts.vt323(
                         color: isUnlocked ? Colors.white60 : Colors.white24,
-                        fontSize: 12,
+                        fontSize: 14,
+                        letterSpacing: 1.0,
                       ),
                     ),
                   ),

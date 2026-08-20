@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flame_audio/flame_audio.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -31,11 +32,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           icon: const Icon(Icons.arrow_back, color: Color(0xFF00FFCC)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'SETTINGS',
-          style: TextStyle(
-            color: Color(0xFF00FFCC),
-            fontSize: 20,
+          style: GoogleFonts.pressStart2p(
+            color: const Color(0xFF00FFCC),
+            fontSize: 16,
             fontWeight: FontWeight.bold,
             letterSpacing: 2.0,
           ),
@@ -44,21 +45,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: Center(
         child: Container(
-          width: 400,
+          width: 440,
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'MUSIC VOLUME',
-                style: TextStyle(
+                style: GoogleFonts.pressStart2p(
                   color: Colors.white70,
+                  fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
+                  letterSpacing: 1.0,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   const Icon(Icons.music_note, color: Color(0xFF00FFCC)),
@@ -72,7 +74,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           bgmVolume = val;
                         });
                         SaveManager.saveBgmVolume(val);
-                        // Update active BGM volume if playing
                         try {
                           FlameAudio.bgm.audioPlayer.setVolume(val);
                         } catch (_) {}
@@ -81,20 +82,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   Text(
                     '${(bgmVolume * 100).toInt()}%',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.pressStart2p(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 32),
-              const Text(
-                'SOUND EFFECTS VOLUME',
-                style: TextStyle(
+              Text(
+                'SFX VOLUME',
+                style: GoogleFonts.pressStart2p(
                   color: Colors.white70,
+                  fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
+                  letterSpacing: 1.0,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   const Icon(Icons.volume_up, color: Color(0xFF00FFCC)),
@@ -113,7 +119,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   Text(
                     '${(sfxVolume * 100).toInt()}%',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.pressStart2p(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 
 class PauseOverlay extends StatelessWidget {
@@ -32,22 +33,22 @@ class PauseOverlay extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'MISSION PAUSED',
-                style: TextStyle(
-                  color: Color(0xFF00FFCC),
-                  fontSize: 20,
+                style: GoogleFonts.pressStart2p(
+                  color: const Color(0xFF00FFCC),
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 2.0,
+                  letterSpacing: 1.0,
                   shadows: [
-                    Shadow(
+                    const Shadow(
                       color: Color(0xFF00FFCC),
                       blurRadius: 4,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 36),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF00FFCC),
@@ -61,12 +62,15 @@ class PauseOverlay extends StatelessWidget {
                   game.paused = false;
                   game.overlays.remove('pause');
                 },
-                child: const Text(
+                child: Text(
                   'RESUME',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: GoogleFonts.pressStart2p(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
@@ -83,9 +87,15 @@ class PauseOverlay extends StatelessWidget {
                     game.loadLevel(game.currentLevelConfig!);
                   }
                 },
-                child: const Text('RESTART LEVEL'),
+                child: Text(
+                  'RESTART LEVEL',
+                  style: GoogleFonts.pressStart2p(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white70,
@@ -100,7 +110,13 @@ class PauseOverlay extends StatelessWidget {
                   game.overlays.remove('pause');
                   Navigator.pop(context);
                 },
-                child: const Text('LEVEL SELECT'),
+                child: Text(
+                  'LEVEL SELECT',
+                  style: GoogleFonts.pressStart2p(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),

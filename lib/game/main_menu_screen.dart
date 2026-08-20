@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class MainMenuScreen extends StatelessWidget {
   const MainMenuScreen({super.key});
@@ -17,7 +18,6 @@ class MainMenuScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo placeholder/Visual Art
               Container(
                 width: 140,
                 height: 140,
@@ -43,29 +43,30 @@ class MainMenuScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-              const Text(
+              const SizedBox(height: 32),
+              Text(
                 'VANGUARD',
-                style: TextStyle(
-                  color: Color(0xFF00FFCC),
-                  fontSize: 48,
+                style: GoogleFonts.pressStart2p(
+                  color: const Color(0xFF00FFCC),
+                  fontSize: 32,
                   fontWeight: FontWeight.w900,
-                  letterSpacing: 8.0,
+                  letterSpacing: 4.0,
                   shadows: [
-                    Shadow(
+                    const Shadow(
                       color: Color(0xFF00FFCC),
                       blurRadius: 15,
                     ),
                   ],
                 ),
               ),
-              const Text(
+              const SizedBox(height: 12),
+              Text(
                 'ECHOES OF EARTH',
-                style: TextStyle(
+                style: GoogleFonts.pressStart2p(
                   color: Colors.white70,
-                  fontSize: 14,
+                  fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 4.0,
+                  letterSpacing: 2.0,
                 ),
               ),
               const SizedBox(height: 56),
@@ -136,10 +137,10 @@ class MainMenuScreen extends StatelessWidget {
         onPressed: onPressed,
         child: Text(
           text,
-          style: const TextStyle(
-            fontSize: 16,
+          style: GoogleFonts.pressStart2p(
+            fontSize: 12,
             fontWeight: FontWeight.bold,
-            letterSpacing: 2.0,
+            letterSpacing: 1.0,
           ),
         ),
       ),

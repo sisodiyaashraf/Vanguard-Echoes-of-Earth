@@ -11,6 +11,7 @@ import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/components/dust_particle.dart';
 import 'package:vanguard_echoes_of_earth/game/components/melee_strike.dart';
 import 'package:vanguard_echoes_of_earth/game/components/platform.dart';
+import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 
 enum HeroState { idle, run, jump, attack, superpower, transformation }
 
@@ -155,7 +156,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
           isGrounded = false;
           _coyoteTimeRemaining = 0.0;
           _jumpBufferTimeRemaining = 0.0;
-          FlameAudio.play('jump.wav');
+          FlameAudio.play('jump.wav', volume: SaveManager.getSfxVolume());
         } else {
           _jumpBufferTimeRemaining = 0.1;
         }
@@ -227,7 +228,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     // Trigger landing squash micro-animation on transition from air to ground
     if (!wasGroundedBefore && isGrounded) {
       _squashTimer = 0.15;
-      FlameAudio.play('landing.wav');
+      FlameAudio.play('landing.wav', volume: SaveManager.getSfxVolume());
     }
 
     // Manage Coyote Time
@@ -244,7 +245,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
         velocity.y = PhysicsConstants.jumpVelocity;
         isGrounded = false;
         _jumpBufferTimeRemaining = 0.0;
-        FlameAudio.play('jump.wav');
+        FlameAudio.play('jump.wav', volume: SaveManager.getSfxVolume());
       }
     }
 
@@ -365,7 +366,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
   void takeDamage(int amount) {
     stats.takeDamage(amount);
     _hitFlashTimer = 0.15;
-    FlameAudio.play('hero_hurt.wav');
+    FlameAudio.play('hero_hurt.wav', volume: SaveManager.getSfxVolume());
 
     if (stats.currentHealth <= 0) {
       game.triggerGameOver();
@@ -439,7 +440,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     if (!stats.spendEnergy(powerEnergyCost)) return;
 
     spawnPower();
-    FlameAudio.play('power.wav');
+    FlameAudio.play('power.wav', volume: SaveManager.getSfxVolume());
 
     _superpowerTimeRemaining = 0.45; // 3 frames * 0.15s = 0.45s
     current = HeroState.superpower;

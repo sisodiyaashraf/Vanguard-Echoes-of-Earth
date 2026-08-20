@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 
 class GameOverOverlay extends StatelessWidget {
@@ -38,27 +39,28 @@ class GameOverOverlay extends StatelessWidget {
                 size: 48,
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'MISSION FAILED',
-                style: TextStyle(
-                  color: Color(0xFFFF5252),
-                  fontSize: 22,
+                style: GoogleFonts.pressStart2p(
+                  color: const Color(0xFFFF5252),
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 2.0,
+                  letterSpacing: 1.0,
                   shadows: [
-                    Shadow(
+                    const Shadow(
                       color: Color(0xFFFF5252),
                       blurRadius: 8,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
-              const Text(
+              const SizedBox(height: 12),
+              Text(
                 'Your active hero was defeated.',
-                style: TextStyle(
+                style: GoogleFonts.vt323(
                   color: Colors.white70,
                   fontSize: 14,
+                  letterSpacing: 1.0,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -77,12 +79,15 @@ class GameOverOverlay extends StatelessWidget {
                     game.loadLevel(game.currentLevelConfig!);
                   }
                 },
-                child: const Text(
+                child: Text(
                   'RETRY',
-                  style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.0),
+                  style: GoogleFonts.pressStart2p(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
@@ -95,7 +100,13 @@ class GameOverOverlay extends StatelessWidget {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: const Text('LEVEL SELECT', style: TextStyle(letterSpacing: 1.0)),
+                child: Text(
+                  'LEVEL SELECT',
+                  style: GoogleFonts.pressStart2p(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
