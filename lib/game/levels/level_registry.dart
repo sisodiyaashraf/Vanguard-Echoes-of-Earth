@@ -1,6 +1,8 @@
 import 'package:flame/extensions.dart';
 import 'level_config.dart';
 import 'package:vanguard_echoes_of_earth/game/story/story_entry.dart';
+import 'package:vanguard_echoes_of_earth/game/core/platform_data.dart';
+import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
 
 class LevelRegistry {
   static final List<LevelConfig> levels = [
@@ -18,9 +20,16 @@ class LevelRegistry {
           text: 'Entering Ashfall Ruins. The air is thick with smoke... it feels exactly like the day I lost my sibling.',
         ),
       ],
+      platforms: [
+        PlatformData(position: Vector2(0, 450), size: Vector2(600, 150)),
+        PlatformData(position: Vector2(700, 350), size: Vector2(300, 40)),
+        PlatformData(position: Vector2(1100, 250), size: Vector2(400, 40), isBreakable: true),
+        PlatformData(position: Vector2(1600, 450), size: Vector2(400, 150)),
+      ],
       enemySpawnPoints: [
-        Vector2(600, 386),
-        Vector2(1200, 386),
+        EnemySpawnData(position: Vector2(350, 386), variant: EnemyVariant.soldier),
+        EnemySpawnData(position: Vector2(1300, 186), variant: EnemyVariant.scout),
+        EnemySpawnData(position: Vector2(1800, 386), variant: EnemyVariant.brute),
       ],
     ),
     LevelConfig(
@@ -66,9 +75,15 @@ class LevelRegistry {
           text: 'Back in the mineshafts... This is where my ambition buried my team. I won\'t let anyone down this time.',
         ),
       ],
+      platforms: [
+        PlatformData(position: Vector2(0, 450), size: Vector2(800, 150)),
+        PlatformData(position: Vector2(900, 320), size: Vector2(400, 40)),
+        PlatformData(position: Vector2(1400, 450), size: Vector2(600, 150)),
+      ],
       enemySpawnPoints: [
-        Vector2(800, 386),
-        Vector2(1400, 386),
+        EnemySpawnData(position: Vector2(400, 386), variant: EnemyVariant.soldier),
+        EnemySpawnData(position: Vector2(1100, 256), variant: EnemyVariant.brute),
+        EnemySpawnData(position: Vector2(1600, 386), variant: EnemyVariant.scout),
       ],
     ),
     LevelConfig(
@@ -245,10 +260,17 @@ class LevelRegistry {
           text: 'The Vanguard stands united at the gates of the Hollow Base. Five souls, one final destiny.',
         ),
       ],
+      platforms: [
+        PlatformData(position: Vector2(0, 450), size: Vector2(500, 150)),
+        PlatformData(position: Vector2(600, 350), size: Vector2(300, 40)),
+        PlatformData(position: Vector2(1000, 250), size: Vector2(400, 40)),
+        PlatformData(position: Vector2(1500, 450), size: Vector2(500, 150)),
+      ],
       enemySpawnPoints: [
-        Vector2(600, 386),
-        Vector2(1000, 386),
-        Vector2(1500, 386),
+        EnemySpawnData(position: Vector2(300, 386), variant: EnemyVariant.scout),
+        EnemySpawnData(position: Vector2(750, 286), variant: EnemyVariant.swarm),
+        EnemySpawnData(position: Vector2(1200, 186), variant: EnemyVariant.soldier),
+        EnemySpawnData(position: Vector2(1700, 386), variant: EnemyVariant.brute),
       ],
     ),
     LevelConfig(

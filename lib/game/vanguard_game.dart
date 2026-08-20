@@ -17,8 +17,14 @@ import 'package:vanguard_echoes_of_earth/game/levels/level_config.dart';
 import 'package:vanguard_echoes_of_earth/game/levels/level_registry.dart';
 import 'package:vanguard_echoes_of_earth/game/components/parallax_background.dart';
 import 'package:vanguard_echoes_of_earth/game/components/hud_buttons.dart';
+import 'package:vanguard_echoes_of_earth/game/components/hollow_enemy.dart';
+import 'package:vanguard_echoes_of_earth/game/components/melee_strike.dart';
+import 'package:vanguard_echoes_of_earth/game/components/plasma_shockwave.dart';
+import 'package:vanguard_echoes_of_earth/game/components/seismic_slam.dart';
+import 'package:vanguard_echoes_of_earth/game/components/temporal_wave.dart';
+import 'package:vanguard_echoes_of_earth/game/components/water_blade_barrage.dart';
 
-class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
+class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
   late final Ground ground;
   JoystickComponent? joystick;
   bool _levelCompleted = false;
@@ -401,10 +407,19 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
     }
 
     if (currentLevelConfig != null && !_levelCompleted) {
-      final endTriggerX = currentLevelConfig!.levelSize.x - 150;
-      if (activeHero.position.x >= endTriggerX) {
-        _levelCompleted = true;
-        _completeLevel();
+      final enemies = world.children.whereType<HollowEnemy>();
+      if (currentLevelConfig!.enemySpawnPoints != null && currentLevelConfig!.enemySpawnPoints!.isNotEmpty) {
+        final activeEnemiesCount = enemies.where((e) => e.health > 0).length;
+        if (activeEnemiesCount == 0) {
+          _levelCompleted = true;
+          _completeLevel();
+        }
+      } else {
+        final endTriggerX = currentLevelConfig!.levelSize.x - 150;
+        if (activeHero.position.x >= endTriggerX) {
+          _levelCompleted = true;
+          _completeLevel();
+        }
       }
     }
   }
@@ -501,6 +516,23 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
     ground.position = Vector2(0, config.levelSize.y - 150);
     ground.size = Vector2(config.levelSize.x, 150);
 
+    // Remove all existing enemies and projectiles from the world
+    final existingEnemies = world.children.whereType<HollowEnemy>();
+    for (var enemy in existingEnemies.toList()) {
+      enemy.removeFromParent();
+    }
+
+    final existingProjectiles = world.children.where((c) =>
+        c is MeleeStrike ||
+        c is PlasmaShockwave ||
+        c is SeismicSlam ||
+        c is TemporalWave ||
+        c is WaterBlade
+    );
+    for (var proj in existingProjectiles.toList()) {
+      proj.removeFromParent();
+    }
+
     // Enforce hero requirements (force active hero according to level assignment)
     if (config.heroId != 'team') {
       final reqHeroIndex = heroes.indexWhere(
@@ -531,6 +563,18 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
     // Reset active hero position to start of level
     activeHero.position = Vector2(100, ground.position.y - activeHero.size.y / 2);
     activeHero.velocity.setZero();
+
+    // Spawn Hollow enemies on top of the platform based on config points
+    if (config.enemySpawnPoints != null) {
+      for (int i = 0; i < config.enemySpawnPoints!.length; i++) {
+        final pt = config.enemySpawnPoints![i];
+        final enemy = HollowEnemy(
+          enemyType: i % 4,
+          position: Vector2(pt.x, ground.position.y - 64.0),
+        );
+        await world.add(enemy);
+      }
+    }
 
     // Play level's introSequence if present
     if (config.introSequence != null && config.introSequence!.isNotEmpty) {

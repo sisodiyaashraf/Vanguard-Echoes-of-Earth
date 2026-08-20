@@ -118,7 +118,7 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     if (health <= 0) {
       current = EnemyAnimState.dead;
       _deathTimer += dt;
-      paint.opacity = (1.0 - (_deathTimer / 0.5)).clamp(0.0, 1.0);
+      paint.color = paint.color.withValues(alpha: (1.0 - (_deathTimer / 0.5)).clamp(0.0, 1.0));
       if (_deathTimer >= 0.5) {
         removeFromParent();
       }

@@ -17,6 +17,11 @@ class HeroStats {
   int get currentEnergy => _currentEnergy;
   int get maxEnergy => _maxEnergy;
 
+  void reset() {
+    _currentHealth = _maxHealth;
+    _currentEnergy = _maxEnergy;
+  }
+
   void takeDamage(int amount) {
     if (amount <= 0) return;
     _currentHealth = (_currentHealth - amount).clamp(0, _maxHealth);

@@ -5,6 +5,8 @@ import 'package:vanguard_echoes_of_earth/game/hud_overlay.dart';
 import 'package:vanguard_echoes_of_earth/game/dialogue_overlay.dart';
 import 'package:vanguard_echoes_of_earth/game/level_selection_overlay.dart';
 import 'package:vanguard_echoes_of_earth/game/pause_overlay.dart';
+import 'package:vanguard_echoes_of_earth/game/game_over_overlay.dart';
+import 'package:vanguard_echoes_of_earth/game/level_complete_overlay.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +30,8 @@ class MainApp extends StatelessWidget {
             'dialogue': (context, game) => DialogueOverlay(game: game),
             'level_selection': (context, game) => LevelSelectionOverlay(game: game),
             'pause': (context, game) => PauseOverlay(game: game),
+            'game_over': (context, game) => GameOverOverlay(game: game),
+            'level_complete': (context, game) => LevelCompleteOverlay(game: game),
           },
           initialActiveOverlays: const ['hud'],
         ),
