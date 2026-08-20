@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 import 'package:vanguard_echoes_of_earth/game/main_menu_screen.dart';
 import 'package:vanguard_echoes_of_earth/game/settings_screen.dart';
@@ -8,6 +9,10 @@ import 'package:vanguard_echoes_of_earth/game/game_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ]);
   await SaveManager.init();
   runApp(const MainApp());
 }
