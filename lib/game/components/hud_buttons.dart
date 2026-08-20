@@ -36,14 +36,12 @@ class RoundIconButton extends PositionComponent {
 
 class TextButtonComponent extends PositionComponent {
   final String text;
-  final double width;
-  final double height;
   final Color backgroundColor;
 
   TextButtonComponent({
     required this.text,
-    this.width = 80,
-    this.height = 40,
+    double width = 80,
+    double height = 40,
     required this.backgroundColor,
   }) : super(size: Vector2(width, height));
 
@@ -60,7 +58,7 @@ class TextButtonComponent extends PositionComponent {
     final border = RectangleComponent(
       size: size,
       paint: Paint()
-        ..color = const Color(0xFF00FFCC).withOpacity(0.3)
+        ..color = const Color(0xFF00FFCC).withValues(alpha: 0.3)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5,
     );

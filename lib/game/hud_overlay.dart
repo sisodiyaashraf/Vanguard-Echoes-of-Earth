@@ -51,191 +51,193 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
     final powerMaxCooldown = hero.powerCooldown;
     final powerCooldownPercent = (powerCooldown / powerMaxCooldown).clamp(0.0, 1.0);
 
-    return Align(
-      alignment: Alignment.topLeft,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // HUD Container with premium dark glassmorphism styling
-            Container(
-              padding: const EdgeInsets.all(12.0),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.55),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.12),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.4),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+    return SafeArea(
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // HUD Container with premium dark glassmorphism styling
+              Container(
+                padding: const EdgeInsets.all(12.0),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.55),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    width: 1.5,
                   ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // --- LOGO & TITLE ---
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: Image.asset(
-                          'assets/app_icon/app_icon.jpg',
-                          width: 24,
-                          height: 24,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'VANGUARD',
-                        style: TextStyle(
-                          color: Color(0xFF00FFCC),
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.5,
-                          shadows: [
-                            Shadow(
-                              color: Color(0xFF00FFCC),
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 24),
-                      InkWell(
-                        onTap: () {
-                          widget.game.overlays.add('level_selection');
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: const Color(0xFF00FFCC).withValues(alpha: 0.5),
-                              width: 1.0,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                            color: const Color(0xFF00FFCC).withValues(alpha: 0.1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // --- LOGO & TITLE ---
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Image.asset(
+                            'assets/app_icon/app_icon.jpg',
+                            width: 24,
+                            height: 24,
+                            fit: BoxFit.cover,
                           ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.map,
-                                size: 14,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'VANGUARD',
+                          style: TextStyle(
+                            color: Color(0xFF00FFCC),
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                            shadows: [
+                              Shadow(
                                 color: Color(0xFF00FFCC),
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                'LEVELS',
-                                style: TextStyle(
-                                  color: Color(0xFF00FFCC),
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
-                                ),
+                                blurRadius: 4,
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const Divider(color: Colors.white10, height: 16),
-
-                  // --- HEALTH BAR ---
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Heart Icon wrapper
-                      SizedBox(
-                        width: 32,
-                        height: 30,
-                        child: SpriteWidget(sprite: widget.game.heartSprite),
-                      ),
-                      const SizedBox(width: 8),
-                      // Health Bar Frame
-                      _buildProgressBar(
-                        width: 180,
-                        height: 18,
-                        percentage: healthPercent,
-                        fillColor: const LinearGradient(
-                          colors: [
-                            Color(0xFFE53935), // Deep red
-                            Color(0xFFFF5252), // Bright red
-                          ],
+                        const SizedBox(width: 24),
+                        InkWell(
+                          onTap: () {
+                            widget.game.overlays.add('level_selection');
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: const Color(0xFF00FFCC).withValues(alpha: 0.5),
+                                width: 1.0,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                              color: const Color(0xFF00FFCC).withValues(alpha: 0.1),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.map,
+                                  size: 14,
+                                  color: Color(0xFF00FFCC),
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'LEVELS',
+                                  style: TextStyle(
+                                    color: Color(0xFF00FFCC),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        label: '${stats.currentHealth}/${stats.maxHealth}',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // --- ENERGY BAR ---
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Lightning Bolt Icon wrapper
-                      SizedBox(
-                        width: 32,
-                        height: 30,
-                        child: SpriteWidget(sprite: widget.game.energySprite),
-                      ),
-                      const SizedBox(width: 8),
-                      // Energy Bar Frame
-                      _buildProgressBar(
-                        width: 180,
-                        height: 18,
-                        percentage: energyPercent,
-                        fillColor: const LinearGradient(
-                          colors: [
-                            Color(0xFF1E88E5), // Deep blue
-                            Color(0xFFFFB300), // Yellow gold
-                          ],
+                      ],
+                    ),
+                    const Divider(color: Colors.white10, height: 16),
+  
+                    // --- HEALTH BAR ---
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Heart Icon wrapper
+                        SizedBox(
+                          width: 32,
+                          height: 30,
+                          child: SpriteWidget(sprite: widget.game.heartSprite),
                         ),
-                        label: '${stats.currentEnergy}/${stats.maxEnergy}',
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        // Health Bar Frame
+                        _buildProgressBar(
+                          width: 180,
+                          height: 18,
+                          percentage: healthPercent,
+                          fillColor: const LinearGradient(
+                            colors: [
+                              Color(0xFFE53935), // Deep red
+                              Color(0xFFFF5252), // Bright red
+                            ],
+                          ),
+                          label: '${stats.currentHealth}/${stats.maxHealth}',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+  
+                    // --- ENERGY BAR ---
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Lightning Bolt Icon wrapper
+                        SizedBox(
+                          width: 32,
+                          height: 30,
+                          child: SpriteWidget(sprite: widget.game.energySprite),
+                        ),
+                        const SizedBox(width: 8),
+                        // Energy Bar Frame
+                        _buildProgressBar(
+                          width: 180,
+                          height: 18,
+                          percentage: energyPercent,
+                          fillColor: const LinearGradient(
+                            colors: [
+                              Color(0xFF1E88E5), // Deep blue
+                              Color(0xFFFFB300), // Yellow gold
+                            ],
+                          ),
+                          label: '${stats.currentEnergy}/${stats.maxEnergy}',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+  
+              // --- ABILITY ICONS / COOLDOWNS ---
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Melee Ability Card
+                  _buildAbilityIcon(
+                    sprite: widget.game.meleeSprite,
+                    cooldownPercent: 0,
+                    cooldownText: '',
+                    glowColor: Colors.orange.withValues(alpha: 0.5),
+                    isReady: !hero.isAttacking,
+                  ),
+                  const SizedBox(width: 10),
+  
+                  // Power Ability Card
+                  _buildAbilityIcon(
+                    sprite: _getPowerSprite(widget.game),
+                    cooldownPercent: powerCooldownPercent,
+                    cooldownText: powerCooldown > 0 ? '${powerCooldown.toStringAsFixed(1)}s' : '',
+                    glowColor: const Color(0xFF9C27B0).withValues(alpha: 0.5),
+                    isReady: powerCooldown <= 0 && stats.currentEnergy >= hero.powerEnergyCost,
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 12),
-
-            // --- ABILITY ICONS / COOLDOWNS ---
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Melee Ability Card
-                _buildAbilityIcon(
-                  sprite: widget.game.meleeSprite,
-                  cooldownPercent: 0,
-                  cooldownText: '',
-                  glowColor: Colors.orange.withValues(alpha: 0.5),
-                  isReady: !hero.isAttacking,
-                ),
-                const SizedBox(width: 10),
-
-                // Power Ability Card
-                _buildAbilityIcon(
-                  sprite: _getPowerSprite(widget.game),
-                  cooldownPercent: powerCooldownPercent,
-                  cooldownText: powerCooldown > 0 ? '${powerCooldown.toStringAsFixed(1)}s' : '',
-                  glowColor: const Color(0xFF9C27B0).withValues(alpha: 0.5),
-                  isReady: powerCooldown <= 0 && stats.currentEnergy >= hero.powerEnergyCost,
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

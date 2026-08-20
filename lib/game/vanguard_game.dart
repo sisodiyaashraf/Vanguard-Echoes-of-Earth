@@ -1,7 +1,7 @@
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vanguard_echoes_of_earth/game/components/base_hero.dart';
 import 'package:vanguard_echoes_of_earth/game/components/dragon_hero.dart';
@@ -16,9 +16,12 @@ import 'package:vanguard_echoes_of_earth/game/story/hero_backstory.dart';
 import 'package:vanguard_echoes_of_earth/game/levels/level_config.dart';
 import 'package:vanguard_echoes_of_earth/game/levels/level_registry.dart';
 import 'package:vanguard_echoes_of_earth/game/components/parallax_background.dart';
+import 'package:vanguard_echoes_of_earth/game/components/hud_buttons.dart';
 
 class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
   late final Ground ground;
+  JoystickComponent? joystick;
+  bool _levelCompleted = false;
   
   // Hero Switching State
   late final List<BaseHero> heroes;
@@ -70,6 +73,10 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
   Future<void> onLoad() async {
     await super.onLoad();
 
+    // Set up camera with a fixed resolution viewport and viewfinder visible game size
+    camera = CameraComponent.withFixedResolution(width: 1280, height: 720);
+    camera.viewfinder.visibleGameSize = Vector2(1000, 600);
+
     // Initialize background parallax first to render behind everything
     parallaxBackground = ParallaxBackground();
     await world.add(parallaxBackground);
@@ -85,18 +92,18 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
 
     // Create the test platform in world space
     ground = Ground(
-      position: Vector2(-1000, 300),
-      size: Vector2(2000, 50),
+      position: Vector2(0, 450),
+      size: Vector2(2000, 150),
     );
     await world.add(ground);
 
     // Initialize all 5 heroes in fixed order, slightly spread out horizontally
     heroes = [
-      DragonHero(position: Vector2(100, 100)),
-      TRexHero(position: Vector2(200, 100)),
-      CuratorHero(position: Vector2(300, 100)),
-      SharkHero(position: Vector2(400, 100)),
-      KitsuneHero(position: Vector2(500, 100)),
+      DragonHero(position: Vector2(100, 386)),
+      TRexHero(position: Vector2(200, 386)),
+      CuratorHero(position: Vector2(300, 386)),
+      SharkHero(position: Vector2(400, 386)),
+      KitsuneHero(position: Vector2(500, 386)),
     ];
 
     for (var h in heroes) {
@@ -111,9 +118,101 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
     activeIndicator.position = Vector2(0, -heroes[0].size.y / 2 - 10);
     await heroes[0].add(activeIndicator);
 
-    // Configure the camera to follow the hero with a slight zoom for better pixel art scaling
-    camera.viewfinder.zoom = 1.5;
+    // Configure the camera to follow the hero
     camera.follow(heroes[0]);
+
+    // Create virtual joystick and action buttons for touch devices on the camera viewport
+    joystick = JoystickComponent(
+      knob: CircleComponent(
+        radius: 25,
+        paint: Paint()..color = const Color(0xFF00FFCC).withValues(alpha: 0.5),
+      ),
+      background: CircleComponent(
+        radius: 60,
+        paint: Paint()..color = Colors.black.withValues(alpha: 0.3),
+      ),
+      margin: const EdgeInsets.only(left: 60, bottom: 60),
+    );
+    await camera.viewport.add(joystick!);
+
+    final jumpButton = HudButtonComponent(
+      button: RoundIconButton(
+        sprite: runSprite,
+        radius: 30,
+        backgroundColor: Colors.black.withValues(alpha: 0.5),
+      ),
+      buttonDown: RoundIconButton(
+        sprite: runSprite,
+        radius: 27,
+        backgroundColor: const Color(0xFF00FFCC).withValues(alpha: 0.4),
+      ),
+      margin: const EdgeInsets.only(right: 130, bottom: 180),
+      onPressed: () {
+        activeHero.inputState.jumpPressed = true;
+      },
+    );
+    await camera.viewport.add(jumpButton);
+
+    final attackButton = HudButtonComponent(
+      button: RoundIconButton(
+        sprite: meleeSprite,
+        radius: 35,
+        backgroundColor: Colors.black.withValues(alpha: 0.5),
+      ),
+      buttonDown: RoundIconButton(
+        sprite: meleeSprite,
+        radius: 32,
+        backgroundColor: const Color(0xFF00FFCC).withValues(alpha: 0.4),
+      ),
+      margin: const EdgeInsets.only(right: 40, bottom: 120),
+      onPressed: () {
+        activeHero.inputState.attackPressed = true;
+      },
+    );
+    await camera.viewport.add(attackButton);
+
+    final powerButton = HudButtonComponent(
+      button: RoundIconButton(
+        sprite: plasmaSprite,
+        radius: 30,
+        backgroundColor: Colors.black.withValues(alpha: 0.5),
+      ),
+      buttonDown: RoundIconButton(
+        sprite: plasmaSprite,
+        radius: 27,
+        backgroundColor: const Color(0xFF00FFCC).withValues(alpha: 0.4),
+      ),
+      margin: const EdgeInsets.only(right: 130, bottom: 60),
+      onPressed: () {
+        activeHero.inputState.powerPressed = true;
+      },
+    );
+    await camera.viewport.add(powerButton);
+
+    final swapButton = HudButtonComponent(
+      button: TextButtonComponent(
+        text: 'SWAP',
+        backgroundColor: Colors.black.withValues(alpha: 0.6),
+      ),
+      buttonDown: TextButtonComponent(
+        text: 'SWAP',
+        backgroundColor: const Color(0xFF00FFCC).withValues(alpha: 0.3),
+      ),
+      margin: const EdgeInsets.only(right: 20, top: 20),
+      onPressed: () {
+        if (currentLevelConfig == null || currentLevelConfig!.heroId == 'team') {
+          cycleHero();
+        } else {
+          showDialogue([
+            StoryEntry(
+              speakerName: 'System',
+              text: 'Hero switching is locked for Solo Mission: ${currentLevelConfig!.displayName}.',
+            )
+          ]);
+        }
+      },
+    );
+    await camera.viewport.add(swapButton);
 
     // Initialize Backstories
     backstories = {
@@ -257,13 +356,7 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
         return KeyEventResult.handled;
       }
 
-      // 4. Debug key 'B' to unlock and display backstory
-      if (keysPressed.contains(LogicalKeyboardKey.keyB)) {
-        unlockCurrentHeroBackstory();
-        return KeyEventResult.handled;
-      }
-
-      // 5. Toggle / switch between heroes using Tab or Q
+      // 4. Toggle / switch between heroes using Tab or Q
       if (keysPressed.contains(LogicalKeyboardKey.tab) ||
           keysPressed.contains(LogicalKeyboardKey.keyQ)) {
         if (currentLevelConfig == null || currentLevelConfig!.heroId == 'team') {
@@ -295,12 +388,70 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
     }
   }
 
+  @override
+  void update(double dt) {
+    super.update(dt);
+
+    if (joystick != null) {
+      if (joystick!.relativeDelta.length > 0) {
+        activeHero.inputState.joystickMoveX = joystick!.relativeDelta.x;
+      } else {
+        activeHero.inputState.joystickMoveX = 0.0;
+      }
+    }
+
+    if (currentLevelConfig != null && !_levelCompleted) {
+      final endTriggerX = currentLevelConfig!.levelSize.x - 150;
+      if (activeHero.position.x >= endTriggerX) {
+        _levelCompleted = true;
+        _completeLevel();
+      }
+    }
+  }
+
+  void _completeLevel() {
+    final isTrial = currentLevelConfig?.id.endsWith('_5') ?? false;
+
+    List<StoryEntry> entries = [];
+    entries.add(StoryEntry(
+      speakerName: 'System',
+      text: 'Level Complete! Mission ${currentLevelConfig?.displayName} successful.',
+    ));
+
+    if (isTrial) {
+      final hero = activeHero;
+      final backstory = backstories[hero.heroName];
+      if (backstory != null) {
+        final entry = backstory.unlockNext();
+        if (entry != null) {
+          entries.add(StoryEntry(
+            speakerName: 'System',
+            text: 'TRIAL CONCLUDED: Next backstory entry unlocked for ${hero.heroName}!',
+          ));
+          entries.add(entry);
+        } else {
+          entries.add(StoryEntry(
+            speakerName: 'System',
+            text: 'TRIAL CONCLUDED: All backstory entries for ${hero.heroName} are already unlocked.',
+          ));
+        }
+      }
+    }
+
+    showDialogue(entries);
+  }
+
   void advanceDialogue() {
     if (dialogueQueue.isNotEmpty) {
       currentDialogueNotifier.value = dialogueQueue.removeAt(0);
     } else {
       currentDialogueNotifier.value = null;
       overlays.remove('dialogue');
+
+      if (_levelCompleted) {
+        _levelCompleted = false;
+        overlays.add('level_selection');
+      }
     }
   }
 
@@ -343,7 +494,12 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
 
   Future<void> loadLevel(LevelConfig config) async {
     currentLevelConfig = config;
+    _levelCompleted = false;
     await parallaxBackground.changeLevelBackground(config.backgroundAssetPath);
+
+    // Resize ground dynamically based on the current level config
+    ground.position = Vector2(0, config.levelSize.y - 150);
+    ground.size = Vector2(config.levelSize.x, 150);
 
     // Enforce hero requirements (force active hero according to level assignment)
     if (config.heroId != 'team') {
@@ -366,8 +522,14 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
       }
     }
 
-    // Reset hero position to start of level
-    activeHero.position = Vector2(100, 100);
+    // Spread all heroes out on the ground
+    for (int i = 0; i < heroes.length; i++) {
+      heroes[i].position = Vector2(100.0 + (i * 100.0), ground.position.y - heroes[i].size.y / 2);
+      heroes[i].velocity.setZero();
+    }
+
+    // Reset active hero position to start of level
+    activeHero.position = Vector2(100, ground.position.y - activeHero.size.y / 2);
     activeHero.velocity.setZero();
 
     // Play level's introSequence if present
