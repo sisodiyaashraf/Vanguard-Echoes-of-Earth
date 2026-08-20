@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/levels/level_registry.dart';
+import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 
 class LevelSelectionOverlay extends StatefulWidget {
   final VanguardGame game;
@@ -188,6 +189,14 @@ class _LevelSelectionOverlayState extends State<LevelSelectionOverlay> {
                                 ),
                               ),
                             ),
+                            if (SaveManager.isLevelCompleted(level.id)) ...[
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.check_circle,
+                                color: Color(0xFF00FFCC),
+                                size: 18,
+                              ),
+                            ],
                           ],
                         ),
                         subtitle: Padding(

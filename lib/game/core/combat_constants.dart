@@ -1,5 +1,7 @@
 enum EnemyAnimState { idle, chase, attack, hurt, dead }
 
+enum EnemyVariant { brute, soldier, scout, swarm }
+
 class CombatConstants {
   static const double meleeAttackDuration = 0.35;
 
@@ -39,11 +41,71 @@ class CombatConstants {
   static const int waterBladeDamage = 20;
 
   // Enemy Combat Statistics
-  static const int enemyMaxHealth = 50;
-  static const int enemyContactDamage = 10;
-  static const double enemySpeed = 80.0;
-  static const double enemyAggroRange = 150.0;
-  static const double enemyAttackRange = 40.0;
   static const double enemyContactDamageCooldown = 1.0;
+
+  static int getEnemyMaxHealth(EnemyVariant variant) {
+    switch (variant) {
+      case EnemyVariant.brute:
+        return 90;
+      case EnemyVariant.soldier:
+        return 50;
+      case EnemyVariant.scout:
+        return 30;
+      case EnemyVariant.swarm:
+        return 15;
+    }
+  }
+
+  static int getEnemyContactDamage(EnemyVariant variant) {
+    switch (variant) {
+      case EnemyVariant.brute:
+        return 20;
+      case EnemyVariant.soldier:
+        return 10;
+      case EnemyVariant.scout:
+        return 8;
+      case EnemyVariant.swarm:
+        return 5;
+    }
+  }
+
+  static double getEnemySpeed(EnemyVariant variant) {
+    switch (variant) {
+      case EnemyVariant.brute:
+        return 40.0;
+      case EnemyVariant.soldier:
+        return 80.0;
+      case EnemyVariant.scout:
+        return 120.0;
+      case EnemyVariant.swarm:
+        return 100.0;
+    }
+  }
+
+  static double getEnemyAggroRange(EnemyVariant variant) {
+    switch (variant) {
+      case EnemyVariant.brute:
+        return 120.0;
+      case EnemyVariant.soldier:
+        return 150.0;
+      case EnemyVariant.scout:
+        return 220.0;
+      case EnemyVariant.swarm:
+        return 180.0;
+    }
+  }
+
+  static double getEnemyAttackRange(EnemyVariant variant) {
+    switch (variant) {
+      case EnemyVariant.brute:
+        return 45.0;
+      case EnemyVariant.soldier:
+        return 40.0;
+      case EnemyVariant.scout:
+        return 35.0;
+      case EnemyVariant.swarm:
+        return 30.0;
+    }
+  }
 }
 

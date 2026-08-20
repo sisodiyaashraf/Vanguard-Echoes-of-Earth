@@ -3,12 +3,14 @@ import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:vanguard_echoes_of_earth/game/core/physics_constants.dart';
 import 'package:vanguard_echoes_of_earth/game/core/hero_stats.dart';
 import 'package:vanguard_echoes_of_earth/game/core/hero_input_state.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/components/dust_particle.dart';
 import 'package:vanguard_echoes_of_earth/game/components/melee_strike.dart';
+import 'package:vanguard_echoes_of_earth/game/components/platform.dart';
 
 enum HeroState { idle, run, jump, attack, superpower, transformation }
 
@@ -138,6 +140,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
           isGrounded = false;
           _coyoteTimeRemaining = 0.0;
           _jumpBufferTimeRemaining = 0.0;
+          FlameAudio.play('jump.wav');
         } else {
           _jumpBufferTimeRemaining = 0.1;
         }
@@ -162,30 +165,36 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     position.x += effectiveHorizontalInput * PhysicsConstants.moveSpeed * dt;
     position.y += velocity.y * dt;
 
-    // Collision detection with Ground component
+    // Collision detection with Platform components
     final halfHeight = size.y / 2;
     final halfWidth = size.x / 2;
-    final ground = game.ground;
-    final groundTop = ground.position.y;
-    final groundLeft = ground.position.x;
-    final groundRight = ground.position.x + ground.size.x;
+    final platforms = game.world.children.whereType<Platform>();
+    bool onAnyPlatform = false;
+    for (var platform in platforms) {
+      final groundTop = platform.position.y;
+      final groundLeft = platform.position.x;
+      final groundRight = platform.position.x + platform.size.x;
 
-    // Check if the hero overlaps horizontally with the platform
-    if (position.x + halfWidth > groundLeft && position.x - halfWidth < groundRight) {
-      if (velocity.y >= 0 &&
-          position.y + halfHeight >= groundTop &&
-          position.y + halfHeight - velocity.y * dt <= groundTop + 10) {
-        position.y = groundTop - halfHeight;
-        velocity.y = 0;
-        isGrounded = true;
+      if (position.x + halfWidth > groundLeft && position.x - halfWidth < groundRight) {
+        if (velocity.y >= 0 &&
+            position.y + halfHeight >= groundTop &&
+            position.y + halfHeight - velocity.y * dt <= groundTop + 10) {
+          position.y = groundTop - halfHeight;
+          velocity.y = 0;
+          isGrounded = true;
+          onAnyPlatform = true;
+          break;
+        }
       }
-    } else {
+    }
+    if (!onAnyPlatform) {
       isGrounded = false;
     }
 
     // Trigger landing squash micro-animation on transition from air to ground
     if (!wasGroundedBefore && isGrounded) {
       _squashTimer = 0.15;
+      FlameAudio.play('landing.wav');
     }
 
     // Manage Coyote Time
@@ -202,6 +211,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
         velocity.y = PhysicsConstants.jumpVelocity;
         isGrounded = false;
         _jumpBufferTimeRemaining = 0.0;
+        FlameAudio.play('jump.wav');
       }
     }
 
@@ -244,7 +254,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     }
 
     // Safety check: if hero falls off the platform, reset
-    if (position.y > groundTop + 400 || position.y > game.size.y + 100) {
+    if (position.y > 800) {
       resetPosition();
     }
 
@@ -322,6 +332,11 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
   void takeDamage(int amount) {
     stats.takeDamage(amount);
     _hitFlashTimer = 0.15;
+    FlameAudio.play('hero_hurt.wav');
+
+    if (stats.currentHealth <= 0) {
+      game.triggerGameOver();
+    }
   }
 
   void _transform() {
@@ -400,6 +415,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     if (!stats.spendEnergy(powerEnergyCost)) return;
 
     spawnPower();
+    FlameAudio.play('power.wav');
 
     _superpowerTimeRemaining = 0.45; // 3 frames * 0.15s = 0.45s
     current = HeroState.superpower;

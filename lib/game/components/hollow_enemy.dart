@@ -2,22 +2,28 @@ import 'dart:ui';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart' show Colors;
+import 'package:flame_audio/flame_audio.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
+import 'package:vanguard_echoes_of_earth/game/core/physics_constants.dart';
 import 'package:vanguard_echoes_of_earth/game/components/melee_strike.dart';
 import 'package:vanguard_echoes_of_earth/game/components/plasma_shockwave.dart';
 import 'package:vanguard_echoes_of_earth/game/components/seismic_slam.dart';
 import 'package:vanguard_echoes_of_earth/game/components/temporal_wave.dart';
 import 'package:vanguard_echoes_of_earth/game/components/water_blade_barrage.dart';
+import 'package:vanguard_echoes_of_earth/game/components/platform.dart';
 
 class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     with HasGameReference<VanguardGame>, CollisionCallbacks {
-  final int enemyType; // 0 to 3 for visual types
+  final EnemyVariant variant;
   final Vector2 velocity = Vector2.zero();
 
-  int health = CombatConstants.enemyMaxHealth;
-  final int maxHealth = CombatConstants.enemyMaxHealth;
-  final int contactDamage = CombatConstants.enemyContactDamage;
+  late int health;
+  late final int maxHealth;
+  late final int contactDamage;
+  late final double speed;
+  late final double aggroRange;
+  late final double attackRange;
 
   double _hurtTimer = 0.0;
   double _deathTimer = 0.0;
@@ -29,25 +35,33 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
   final Set<PositionComponent> _receivedHits = {};
 
   HollowEnemy({
-    required this.enemyType,
+    required this.variant,
     required Vector2 position,
   }) : super(
           position: position,
           size: Vector2.all(128),
           anchor: Anchor.center,
-        );
+        ) {
+    maxHealth = CombatConstants.getEnemyMaxHealth(variant);
+    health = maxHealth;
+    contactDamage = CombatConstants.getEnemyContactDamage(variant);
+    speed = CombatConstants.getEnemySpeed(variant);
+    aggroRange = CombatConstants.getEnemyAggroRange(variant);
+    attackRange = CombatConstants.getEnemyAttackRange(variant);
+  }
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
 
     final image = await game.images.load('characters/Enemy sprites (The Hollow).png');
+    final row = variant.index;
 
-    // Slice frames for the specified enemy type row (height offset is enemyType * 250)
+    // Slice frames for the specified enemy type row (height offset is row * 250)
     final idleAnimation = SpriteAnimation.spriteList(
       List.generate(4, (i) => Sprite(
         image,
-        srcPosition: Vector2(i * 250.0, enemyType * 250.0),
+        srcPosition: Vector2(i * 250.0, row * 250.0),
         srcSize: Vector2(250.0, 250.0),
       )),
       stepTime: 0.15,
@@ -56,7 +70,7 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     final chaseAnimation = SpriteAnimation.spriteList(
       List.generate(6, (i) => Sprite(
         image,
-        srcPosition: Vector2(i * 250.0, enemyType * 250.0),
+        srcPosition: Vector2(i * 250.0, row * 250.0),
         srcSize: Vector2(250.0, 250.0),
       )),
       stepTime: 0.10,
@@ -65,7 +79,7 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     final attackAnimation = SpriteAnimation.spriteList(
       List.generate(2, (i) => Sprite(
         image,
-        srcPosition: Vector2((4 + i) * 250.0, enemyType * 250.0),
+        srcPosition: Vector2((4 + i) * 250.0, row * 250.0),
         srcSize: Vector2(250.0, 250.0),
       )),
       stepTime: 0.15,
@@ -74,7 +88,7 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     final hurtAnimation = SpriteAnimation.spriteList(
       [Sprite(
         image,
-        srcPosition: Vector2(0, enemyType * 250.0),
+        srcPosition: Vector2(0, row * 250.0),
         srcSize: Vector2(250.0, 250.0),
       )],
       stepTime: 0.15,
@@ -83,7 +97,7 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     final deadAnimation = SpriteAnimation.spriteList(
       [Sprite(
         image,
-        srcPosition: Vector2(0, enemyType * 250.0),
+        srcPosition: Vector2(0, row * 250.0),
         srcSize: Vector2(250.0, 250.0),
       )],
       stepTime: 0.15,
@@ -138,17 +152,48 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
       return;
     }
 
+    // Apply gravity
+    velocity.y += PhysicsConstants.gravity * dt;
+    position.y += velocity.y * dt;
+
+    // Platform collisions
+    final halfHeight = size.y / 2;
+    final halfWidth = size.x / 2;
+    final platforms = game.world.children.whereType<Platform>();
+    for (var platform in platforms) {
+      final groundTop = platform.position.y;
+      final groundLeft = platform.position.x;
+      final groundRight = platform.position.x + platform.size.x;
+
+      if (position.x + halfWidth > groundLeft && position.x - halfWidth < groundRight) {
+        if (velocity.y >= 0 &&
+            position.y + halfHeight >= groundTop &&
+            position.y + halfHeight - velocity.y * dt <= groundTop + 10) {
+          position.y = groundTop - halfHeight;
+          velocity.y = 0;
+          break;
+        }
+      }
+    }
+
+    // Safety check: remove if falls out of bounds
+    if (position.y > 800) {
+      removeFromParent();
+      return;
+    }
+
+    // AI Logic
     final hero = game.activeHero;
     final toHero = hero.position - position;
     final distance = toHero.length;
 
-    if (distance > CombatConstants.enemyAggroRange) {
+    if (distance > aggroRange) {
       current = EnemyAnimState.idle;
       velocity.x = 0.0;
-    } else if (distance > CombatConstants.enemyAttackRange) {
+    } else if (distance > attackRange) {
       current = EnemyAnimState.chase;
       final directionX = toHero.x.sign;
-      velocity.x = directionX * CombatConstants.enemySpeed;
+      velocity.x = directionX * speed;
       position.x += velocity.x * dt;
 
       if (velocity.x < 0 && scale.x > 0) {
@@ -185,10 +230,18 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     current = EnemyAnimState.hurt;
     animationTicker?.reset();
 
+    // Play hit SFX
+    if (source is MeleeStrike) {
+      FlameAudio.play('melee_hit.wav');
+    } else {
+      FlameAudio.play('enemy_hit.wav');
+    }
+
     if (health <= 0) {
       current = EnemyAnimState.dead;
       _bodyHitbox.collisionType = CollisionType.inactive;
       _deathTimer = 0.0;
+      FlameAudio.play('enemy_death.wav');
     }
   }
 

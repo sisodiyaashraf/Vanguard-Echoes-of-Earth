@@ -3,6 +3,7 @@ import 'package:flame/game.dart';
 import 'package:flame/input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:vanguard_echoes_of_earth/game/components/base_hero.dart';
 import 'package:vanguard_echoes_of_earth/game/components/dragon_hero.dart';
 import 'package:vanguard_echoes_of_earth/game/components/t_rex_hero.dart';
@@ -10,7 +11,7 @@ import 'package:vanguard_echoes_of_earth/game/components/curator_hero.dart';
 import 'package:vanguard_echoes_of_earth/game/components/shark_hero.dart';
 import 'package:vanguard_echoes_of_earth/game/components/kitsune_hero.dart';
 import 'package:vanguard_echoes_of_earth/game/components/active_indicator.dart';
-import 'package:vanguard_echoes_of_earth/game/components/ground.dart';
+import 'package:vanguard_echoes_of_earth/game/components/platform.dart';
 import 'package:vanguard_echoes_of_earth/game/story/story_entry.dart';
 import 'package:vanguard_echoes_of_earth/game/story/hero_backstory.dart';
 import 'package:vanguard_echoes_of_earth/game/levels/level_config.dart';
@@ -23,11 +24,12 @@ import 'package:vanguard_echoes_of_earth/game/components/plasma_shockwave.dart';
 import 'package:vanguard_echoes_of_earth/game/components/seismic_slam.dart';
 import 'package:vanguard_echoes_of_earth/game/components/temporal_wave.dart';
 import 'package:vanguard_echoes_of_earth/game/components/water_blade_barrage.dart';
+import 'package:vanguard_echoes_of_earth/game/core/game_state.dart';
+import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 
 class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
-  late final Ground ground;
   JoystickComponent? joystick;
-  bool _levelCompleted = false;
+  GameState gameState = GameState.playing;
   
   // Hero Switching State
   late final List<BaseHero> heroes;
@@ -96,12 +98,26 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
     runSprite = Sprite(uiSheet, srcPosition: Vector2(970, 372), srcSize: Vector2(228, 231));
     plasmaSprite = Sprite(uiSheet, srcPosition: Vector2(1220, 372), srcSize: Vector2(227, 231));
 
-    // Create the test platform in world space
-    ground = Ground(
+    // Initialize audio bgm
+    await FlameAudio.bgm.initialize();
+
+    // Initialize SharedPreferences SaveManager
+    await SaveManager.init();
+
+    // Load persisted backstory unlocks for all heroes
+    backstories.forEach((heroName, backstory) {
+      final unlockedCount = SaveManager.getUnlockedBackstoryCount(heroName);
+      for (int i = 0; i < unlockedCount; i++) {
+        backstory.unlockNext();
+      }
+    });
+
+    // Create the initial platform in world space
+    final initialPlatform = Platform(
       position: Vector2(0, 450),
       size: Vector2(2000, 150),
     );
-    await world.add(ground);
+    await world.add(initialPlatform);
 
     // Initialize all 5 heroes in fixed order, slightly spread out horizontally
     heroes = [
@@ -406,18 +422,16 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
       }
     }
 
-    if (currentLevelConfig != null && !_levelCompleted) {
+    if (currentLevelConfig != null && gameState == GameState.playing) {
       final enemies = world.children.whereType<HollowEnemy>();
       if (currentLevelConfig!.enemySpawnPoints != null && currentLevelConfig!.enemySpawnPoints!.isNotEmpty) {
         final activeEnemiesCount = enemies.where((e) => e.health > 0).length;
         if (activeEnemiesCount == 0) {
-          _levelCompleted = true;
           _completeLevel();
         }
       } else {
         final endTriggerX = currentLevelConfig!.levelSize.x - 150;
         if (activeHero.position.x >= endTriggerX) {
-          _levelCompleted = true;
           _completeLevel();
         }
       }
@@ -425,6 +439,18 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
   }
 
   void _completeLevel() {
+    if (gameState == GameState.levelComplete) return;
+    gameState = GameState.levelComplete;
+
+    // Play win BGM/SFX and stop current music
+    FlameAudio.bgm.stop();
+    FlameAudio.play('win.wav');
+
+    // Save completed level
+    if (currentLevelConfig != null) {
+      SaveManager.saveCompletedLevel(currentLevelConfig!.id);
+    }
+
     final isTrial = currentLevelConfig?.id.endsWith('_5') ?? false;
 
     List<StoryEntry> entries = [];
@@ -444,6 +470,10 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
             text: 'TRIAL CONCLUDED: Next backstory entry unlocked for ${hero.heroName}!',
           ));
           entries.add(entry);
+
+          // Save backstory unlock count
+          final count = backstory.unlockedEntries.length;
+          SaveManager.saveUnlockedBackstory(hero.heroName, count);
         } else {
           entries.add(StoryEntry(
             speakerName: 'System',
@@ -463,11 +493,21 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
       currentDialogueNotifier.value = null;
       overlays.remove('dialogue');
 
-      if (_levelCompleted) {
-        _levelCompleted = false;
-        overlays.add('level_selection');
+      if (gameState == GameState.levelComplete) {
+        // Freeze gameplay and show complete menu
+        paused = true;
+        overlays.add('level_complete');
       }
     }
+  }
+
+  void triggerGameOver() {
+    if (gameState == GameState.gameOver) return;
+    gameState = GameState.gameOver;
+    paused = true;
+    FlameAudio.bgm.stop();
+    FlameAudio.play('game_over.wav');
+    overlays.add('game_over');
   }
 
   void unlockCurrentHeroBackstory() {
@@ -507,16 +547,40 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
     camera.follow(newHero);
   }
 
+  String _getBgmForHero(String heroId) {
+    switch (heroId.toLowerCase()) {
+      case 'dragon':
+        return 'music_fire.wav';
+      case 't-rex':
+        return 'music_earth.wav';
+      case 'shark':
+        return 'music_ocean.wav';
+      case 'curator':
+        return 'music_ancient.wav';
+      case 'kitsune':
+        return 'music_tech.wav';
+      case 'team':
+      default:
+        return 'music_team.wav';
+    }
+  }
+
   Future<void> loadLevel(LevelConfig config) async {
     currentLevelConfig = config;
-    _levelCompleted = false;
+    gameState = GameState.playing;
+    paused = false;
+    overlays.remove('game_over');
+    overlays.remove('level_complete');
+    overlays.remove('pause');
+
     await parallaxBackground.changeLevelBackground(config.backgroundAssetPath);
 
-    // Resize ground dynamically based on the current level config
-    ground.position = Vector2(0, config.levelSize.y - 150);
-    ground.size = Vector2(config.levelSize.x, 150);
+    // Remove all existing platforms, enemies, and projectiles from the world
+    final existingPlatforms = world.children.whereType<Platform>();
+    for (var platform in existingPlatforms.toList()) {
+      platform.removeFromParent();
+    }
 
-    // Remove all existing enemies and projectiles from the world
     final existingEnemies = world.children.whereType<HollowEnemy>();
     for (var enemy in existingEnemies.toList()) {
       enemy.removeFromParent();
@@ -531,6 +595,24 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
     );
     for (var proj in existingProjectiles.toList()) {
       proj.removeFromParent();
+    }
+
+    // Spawn platforms from config, or default flat platform
+    if (config.platforms != null && config.platforms!.isNotEmpty) {
+      for (var platData in config.platforms!) {
+        final platform = Platform(
+          position: platData.position,
+          size: platData.size,
+          isBreakable: platData.isBreakable,
+        );
+        await world.add(platform);
+      }
+    } else {
+      final platform = Platform(
+        position: Vector2(0, config.levelSize.y - 150),
+        size: Vector2(config.levelSize.x, 150),
+      );
+      await world.add(platform);
     }
 
     // Enforce hero requirements (force active hero according to level assignment)
@@ -554,27 +636,39 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
       }
     }
 
+    final startY = (config.platforms != null && config.platforms!.isNotEmpty)
+        ? config.platforms!.first.position.y
+        : config.levelSize.y - 150;
+
     // Spread all heroes out on the ground
     for (int i = 0; i < heroes.length; i++) {
-      heroes[i].position = Vector2(100.0 + (i * 100.0), ground.position.y - heroes[i].size.y / 2);
+      heroes[i].position = Vector2(100.0 + (i * 100.0), startY - heroes[i].size.y / 2);
       heroes[i].velocity.setZero();
     }
 
     // Reset active hero position to start of level
-    activeHero.position = Vector2(100, ground.position.y - activeHero.size.y / 2);
+    activeHero.position = Vector2(100, startY - activeHero.size.y / 2);
     activeHero.velocity.setZero();
 
-    // Spawn Hollow enemies on top of the platform based on config points
+    // Reset stats for retry robustness
+    for (var hero in heroes) {
+      hero.stats.reset();
+    }
+
+    // Spawn Hollow enemies on top of platforms based on config points
     if (config.enemySpawnPoints != null) {
-      for (int i = 0; i < config.enemySpawnPoints!.length; i++) {
-        final pt = config.enemySpawnPoints![i];
+      for (var sp in config.enemySpawnPoints!) {
         final enemy = HollowEnemy(
-          enemyType: i % 4,
-          position: Vector2(pt.x, ground.position.y - 64.0),
+          variant: sp.variant,
+          position: Vector2(sp.position.x, sp.position.y),
         );
         await world.add(enemy);
       }
     }
+
+    // Play looping theme music
+    final bgmFile = _getBgmForHero(config.heroId);
+    FlameAudio.bgm.play(bgmFile);
 
     // Play level's introSequence if present
     if (config.introSequence != null && config.introSequence!.isNotEmpty) {
