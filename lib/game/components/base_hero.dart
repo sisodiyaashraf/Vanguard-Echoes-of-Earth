@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vanguard_echoes_of_earth/game/core/physics_constants.dart';
 import 'package:vanguard_echoes_of_earth/game/core/hero_stats.dart';
+import 'package:vanguard_echoes_of_earth/game/core/hero_input_state.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/components/dust_particle.dart';
 
@@ -12,7 +13,7 @@ enum HeroState { idle, run, jump, attack, superpower, transformation }
 abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     with HasGameReference<VanguardGame>, KeyboardHandler {
   final Vector2 velocity = Vector2.zero();
-  double horizontalInput = 0.0;
+  final HeroInputState inputState = HeroInputState();
   bool isGrounded = false;
 
   // Stats & Regen
@@ -113,9 +114,42 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     // Apply gravity
     velocity.y += PhysicsConstants.gravity * dt;
 
-    // Lock horizontal speed during basic attack, power casting, or transformation
+    // Gate all input if dialogue overlay is active
+    if (game.isInputGated) {
+      inputState.reset();
+    }
+
     final isLocked = isAttacking || isSuperpowerActive || isTransforming;
-    final effectiveHorizontalInput = isLocked ? 0.0 : horizontalInput;
+
+    // Read and consume input triggers if not gated/locked
+    if (!game.isInputGated && !isLocked) {
+      if (inputState.jumpPressed) {
+        inputState.jumpPressed = false;
+        if (isGrounded || _coyoteTimeRemaining > 0.0) {
+          velocity.y = PhysicsConstants.jumpVelocity;
+          isGrounded = false;
+          _coyoteTimeRemaining = 0.0;
+          _jumpBufferTimeRemaining = 0.0;
+        } else {
+          _jumpBufferTimeRemaining = 0.1;
+        }
+      }
+
+      if (inputState.attackPressed) {
+        inputState.attackPressed = false;
+        _meleeAttack();
+      }
+
+      if (inputState.powerPressed) {
+        inputState.powerPressed = false;
+        _firePower();
+      }
+    } else {
+      // Clear triggers if we are locked or input is gated
+      inputState.resetTriggers();
+    }
+
+    final effectiveHorizontalInput = (isLocked || game.isInputGated) ? 0.0 : inputState.moveX;
     
     position.x += effectiveHorizontalInput * PhysicsConstants.moveSpeed * dt;
     position.y += velocity.y * dt;
@@ -208,9 +242,9 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
 
     // Flip sprite scale horizontally based on movement direction (only when not in locked states)
     if (!isLocked) {
-      if (horizontalInput < 0 && scale.x > 0) {
+      if (effectiveHorizontalInput < 0 && scale.x > 0) {
         scale.x = -1;
-      } else if (horizontalInput > 0 && scale.x < 0) {
+      } else if (effectiveHorizontalInput > 0 && scale.x < 0) {
         scale.x = 1;
       }
     }
@@ -223,7 +257,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
     // If dialogue overlay is active, gate all movement/actions
     if (game.isInputGated) {
-      horizontalInput = 0.0;
+      inputState.reset();
       return true;
     }
 
@@ -232,58 +266,46 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
 
     // If locked in action, ignore movement keys but consume input
     if (isAttacking || isSuperpowerActive || isTransforming) {
-      horizontalInput = 0.0;
+      inputState.keyboardMoveX = 0.0;
       return true;
     }
 
-    // Reset horizontal movement input
-    horizontalInput = 0.0;
+    // Reset keyboard movement input
+    inputState.keyboardMoveX = 0.0;
 
     // Check directional keys
     if (keysPressed.contains(LogicalKeyboardKey.arrowLeft) ||
         keysPressed.contains(LogicalKeyboardKey.keyA)) {
-      horizontalInput -= 1.0;
+      inputState.keyboardMoveX -= 1.0;
     }
     if (keysPressed.contains(LogicalKeyboardKey.arrowRight) ||
         keysPressed.contains(LogicalKeyboardKey.keyD)) {
-      horizontalInput += 1.0;
+      inputState.keyboardMoveX += 1.0;
     }
 
-    // Check jump command (supporting coyote time and input buffering)
-    final isJumpPressed = keysPressed.contains(LogicalKeyboardKey.space) ||
-        keysPressed.contains(LogicalKeyboardKey.arrowUp) ||
-        keysPressed.contains(LogicalKeyboardKey.keyW);
+    // Check action commands on KeyDownEvent to trigger only once per press
+    if (event is KeyDownEvent) {
+      final isJumpPressed = keysPressed.contains(LogicalKeyboardKey.space) ||
+          keysPressed.contains(LogicalKeyboardKey.arrowUp) ||
+          keysPressed.contains(LogicalKeyboardKey.keyW);
 
-    if (isJumpPressed) {
-      if (isGrounded || _coyoteTimeRemaining > 0.0) {
-        velocity.y = PhysicsConstants.jumpVelocity;
-        isGrounded = false;
-        _coyoteTimeRemaining = 0.0;
-        _jumpBufferTimeRemaining = 0.0;
-      } else {
-        _jumpBufferTimeRemaining = 0.1;
+      if (isJumpPressed) {
+        inputState.jumpPressed = true;
       }
-    }
 
-    // Check basic melee attack commands
-    if (keysPressed.contains(LogicalKeyboardKey.keyF) ||
-        keysPressed.contains(LogicalKeyboardKey.keyJ)) {
-      _meleeAttack();
-    }
+      if (keysPressed.contains(LogicalKeyboardKey.keyF) ||
+          keysPressed.contains(LogicalKeyboardKey.keyJ)) {
+        inputState.attackPressed = true;
+      }
 
-    // Check power commands (key K)
-    if (keysPressed.contains(LogicalKeyboardKey.keyK)) {
-      _firePower();
-    }
+      if (keysPressed.contains(LogicalKeyboardKey.keyK)) {
+        inputState.powerPressed = true;
+      }
 
-    // Check transformation command (key T)
-    if (keysPressed.contains(LogicalKeyboardKey.keyT)) {
-      _transform();
-    }
-
-    // Check debug takeDamage command (key H)
-    if (event is KeyDownEvent && keysPressed.contains(LogicalKeyboardKey.keyH)) {
-      takeDamage(10);
+      // Check transformation command (key T)
+      if (keysPressed.contains(LogicalKeyboardKey.keyT)) {
+        _transform();
+      }
     }
 
     return true;
