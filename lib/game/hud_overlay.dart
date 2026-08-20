@@ -110,6 +110,44 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
                           ],
                         ),
                       ),
+                      const SizedBox(width: 24),
+                      InkWell(
+                        onTap: () {
+                          widget.game.overlays.add('level_selection');
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: const Color(0xFF00FFCC).withValues(alpha: 0.5),
+                              width: 1.0,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                            color: const Color(0xFF00FFCC).withValues(alpha: 0.1),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.map,
+                                size: 14,
+                                color: Color(0xFF00FFCC),
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'LEVELS',
+                                style: TextStyle(
+                                  color: Color(0xFF00FFCC),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   const Divider(color: Colors.white10, height: 16),

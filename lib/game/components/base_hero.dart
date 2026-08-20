@@ -1,8 +1,11 @@
+import 'dart:math';
 import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vanguard_echoes_of_earth/game/core/physics_constants.dart';
 import 'package:vanguard_echoes_of_earth/game/core/hero_stats.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
+import 'package:vanguard_echoes_of_earth/game/components/dust_particle.dart';
 
 enum HeroState { idle, run, jump, attack, superpower, transformation }
 
@@ -24,6 +27,20 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
   double _powerCooldownRemaining = 0.0;
   double _superpowerTimeRemaining = 0.0;
   double _transformationTimeRemaining = 0.0;
+
+  // Coyote time & input buffering
+  double _coyoteTimeRemaining = 0.0;
+  double _jumpBufferTimeRemaining = 0.0;
+
+  // Landing squash effect
+  double _squashTimer = 0.0;
+
+  // Running dust particles
+  double _dustTimer = 0.0;
+  final Random _random = Random();
+
+  // Hit-flash effect
+  double _hitFlashTimer = 0.0;
 
   bool get isAttacking => _attackTimeRemaining > 0.0;
   double get powerCooldownRemaining => _powerCooldownRemaining;
@@ -79,6 +96,8 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
 
   @override
   void update(double dt) {
+    final wasGroundedBefore = isGrounded;
+
     super.update(dt);
 
     // Decrement combat and state timers
@@ -120,6 +139,66 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
       }
     } else {
       isGrounded = false;
+    }
+
+    // Trigger landing squash micro-animation on transition from air to ground
+    if (!wasGroundedBefore && isGrounded) {
+      _squashTimer = 0.15;
+    }
+
+    // Manage Coyote Time
+    if (isGrounded) {
+      _coyoteTimeRemaining = 0.1;
+    } else {
+      _coyoteTimeRemaining = max(0.0, _coyoteTimeRemaining - dt);
+    }
+
+    // Manage Jump Input Buffering
+    if (_jumpBufferTimeRemaining > 0.0) {
+      _jumpBufferTimeRemaining = max(0.0, _jumpBufferTimeRemaining - dt);
+      if (isGrounded && _jumpBufferTimeRemaining > 0.0) {
+        velocity.y = PhysicsConstants.jumpVelocity;
+        isGrounded = false;
+        _jumpBufferTimeRemaining = 0.0;
+      }
+    }
+
+    // Procedural Landing Squash scaling
+    if (_squashTimer > 0.0) {
+      _squashTimer = max(0.0, _squashTimer - dt);
+      final squashFactor = 0.12 * sin(pi * _squashTimer / 0.15);
+      scale.y = 1.0 - squashFactor;
+      scale.x = scale.x.sign * (1.0 + squashFactor * 0.7);
+    } else {
+      scale.y = 1.0;
+      scale.x = scale.x.sign * 1.0;
+    }
+
+    // Run footstep dust particles
+    if (current == HeroState.run && isGrounded) {
+      _dustTimer += dt;
+      if (_dustTimer >= 0.15) {
+        _dustTimer = 0.0;
+        final spawnPos = position + Vector2(-scale.x.sign * 15.0, size.y / 2 - 5);
+        final randomX = (_random.nextDouble() - 0.5) * 15 - scale.x.sign * 35;
+        final randomY = -_random.nextDouble() * 15 - 5;
+        game.world.add(DustParticle(
+          position: spawnPos,
+          velocity: Vector2(randomX, randomY),
+        ));
+      }
+    }
+
+    // Hit-flash effect
+    if (_hitFlashTimer > 0) {
+      _hitFlashTimer = max(0.0, _hitFlashTimer - dt);
+      final tick = (_hitFlashTimer * 20).toInt();
+      paint.colorFilter = tick % 2 == 0
+          ? const ColorFilter.mode(Colors.white, BlendMode.srcATop)
+          : const ColorFilter.mode(Color(0xFFFF3333), BlendMode.srcATop);
+      if (_hitFlashTimer <= 0.0) {
+        paint.colorFilter = null;
+      }
     }
 
     // Safety check: if hero falls off the platform, reset
@@ -170,14 +249,20 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
       horizontalInput += 1.0;
     }
 
-    // Check jump command
+    // Check jump command (supporting coyote time and input buffering)
     final isJumpPressed = keysPressed.contains(LogicalKeyboardKey.space) ||
         keysPressed.contains(LogicalKeyboardKey.arrowUp) ||
         keysPressed.contains(LogicalKeyboardKey.keyW);
 
-    if (isJumpPressed && isGrounded) {
-      velocity.y = PhysicsConstants.jumpVelocity;
-      isGrounded = false;
+    if (isJumpPressed) {
+      if (isGrounded || _coyoteTimeRemaining > 0.0) {
+        velocity.y = PhysicsConstants.jumpVelocity;
+        isGrounded = false;
+        _coyoteTimeRemaining = 0.0;
+        _jumpBufferTimeRemaining = 0.0;
+      } else {
+        _jumpBufferTimeRemaining = 0.1;
+      }
     }
 
     // Check basic melee attack commands
@@ -198,10 +283,15 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
 
     // Check debug takeDamage command (key H)
     if (event is KeyDownEvent && keysPressed.contains(LogicalKeyboardKey.keyH)) {
-      stats.takeDamage(10);
+      takeDamage(10);
     }
 
     return true;
+  }
+
+  void takeDamage(int amount) {
+    stats.takeDamage(amount);
+    _hitFlashTimer = 0.15;
   }
 
   void _transform() {

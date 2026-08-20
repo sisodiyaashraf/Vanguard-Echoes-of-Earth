@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
-import 'package:vanguard_echoes_of_earth/game/level/level.dart';
-import 'package:vanguard_echoes_of_earth/game/level/level_data.dart';
+import 'package:vanguard_echoes_of_earth/game/levels/level_registry.dart';
 
 class LevelSelectionOverlay extends StatefulWidget {
   final VanguardGame game;
@@ -25,17 +24,17 @@ class _LevelSelectionOverlayState extends State<LevelSelectionOverlay> {
     'Team',
   ];
 
-  Color _getHeroColor(String heroName) {
-    switch (heroName) {
-      case 'Dragon':
+  Color _getHeroColor(String heroId) {
+    switch (heroId.toLowerCase()) {
+      case 'dragon':
         return const Color(0xFFFF4500); // Orange-Red
-      case 'T-Rex':
+      case 't-rex':
         return const Color(0xFFFFD700); // Gold / Amber
-      case 'Curator':
+      case 'curator':
         return const Color(0xFF9400D3); // Deep Violet
-      case 'Shark':
+      case 'shark':
         return const Color(0xFF1E90FF); // Dodger Blue
-      case 'Kitsune':
+      case 'kitsune':
         return const Color(0xFF00FFCC); // Neon Cyan
       default:
         return const Color(0xFFFF007F); // Neon Pink (Team)
@@ -44,9 +43,9 @@ class _LevelSelectionOverlayState extends State<LevelSelectionOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredLevels = LevelData.levels.where((level) {
+    final filteredLevels = LevelRegistry.levels.where((level) {
       if (selectedFilter == 'All') return true;
-      return level.heroRequirement == selectedFilter;
+      return level.heroId.toLowerCase() == selectedFilter.toLowerCase();
     }).toList();
 
     return Material(
@@ -148,7 +147,13 @@ class _LevelSelectionOverlayState extends State<LevelSelectionOverlay> {
                   itemCount: filteredLevels.length,
                   itemBuilder: (context, index) {
                     final level = filteredLevels[index];
-                    final heroColor = _getHeroColor(level.heroRequirement);
+                    final heroColor = _getHeroColor(level.heroId);
+
+                    // Extract level display ID (e.g. dragon_1 -> 01)
+                    final levelNum = level.id.split('_').last;
+                    final formattedLvl = int.tryParse(levelNum) != null
+                        ? 'LVL ${levelNum.padLeft(2, '0')}'
+                        : 'MISSION';
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
@@ -165,7 +170,7 @@ class _LevelSelectionOverlayState extends State<LevelSelectionOverlay> {
                         title: Row(
                           children: [
                             Text(
-                              'LVL ${level.id.toString().padLeft(2, '0')} - ',
+                              '$formattedLvl - ',
                               style: TextStyle(
                                 color: heroColor,
                                 fontWeight: FontWeight.bold,
@@ -174,7 +179,7 @@ class _LevelSelectionOverlayState extends State<LevelSelectionOverlay> {
                             ),
                             Expanded(
                               child: Text(
-                                level.name.toUpperCase(),
+                                level.displayName.toUpperCase(),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -188,7 +193,9 @@ class _LevelSelectionOverlayState extends State<LevelSelectionOverlay> {
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
-                            level.subtitle,
+                            level.heroId == 'team'
+                                ? 'Full squad campaign. Switch heroes mid-battle.'
+                                : 'Solo deployment for ${level.heroId.toUpperCase()}.',
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.65),
                               fontSize: 13,
@@ -206,7 +213,7 @@ class _LevelSelectionOverlayState extends State<LevelSelectionOverlay> {
                                 border: Border.all(color: heroColor.withValues(alpha: 0.4)),
                               ),
                               child: Text(
-                                level.heroRequirement.toUpperCase(),
+                                level.heroId.toUpperCase(),
                                 style: TextStyle(
                                   color: heroColor,
                                   fontSize: 10,

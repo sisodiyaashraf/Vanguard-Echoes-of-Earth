@@ -13,6 +13,9 @@ import 'package:vanguard_echoes_of_earth/game/components/active_indicator.dart';
 import 'package:vanguard_echoes_of_earth/game/components/ground.dart';
 import 'package:vanguard_echoes_of_earth/game/story/story_entry.dart';
 import 'package:vanguard_echoes_of_earth/game/story/hero_backstory.dart';
+import 'package:vanguard_echoes_of_earth/game/levels/level_config.dart';
+import 'package:vanguard_echoes_of_earth/game/levels/level_registry.dart';
+import 'package:vanguard_echoes_of_earth/game/components/parallax_background.dart';
 
 class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
   late final Ground ground;
@@ -26,6 +29,10 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
   final ValueNotifier<StoryEntry?> currentDialogueNotifier = ValueNotifier<StoryEntry?>(null);
   final List<StoryEntry> dialogueQueue = [];
   bool get isInputGated => currentDialogueNotifier.value != null;
+
+  // Level State
+  late final ParallaxBackground parallaxBackground;
+  LevelConfig? currentLevelConfig;
 
   late final Map<String, HeroBackstory> backstories;
 
@@ -62,6 +69,10 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+
+    // Initialize background parallax first to render behind everything
+    parallaxBackground = ParallaxBackground();
+    await world.add(parallaxBackground);
 
     // Load the UI sprite sheet
     final uiSheet = await images.load('characters/UI elements (icons, not animated).png');
@@ -208,6 +219,9 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
       ),
     };
 
+    // Load first level by default
+    await loadLevel(LevelRegistry.levels[0]);
+
     // Play intro sequence
     showDialogue(introSequence);
   }
@@ -215,7 +229,27 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
   @override
   KeyEventResult onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
     if (event is KeyDownEvent) {
-      // 1. If dialogue is active, handle Enter key to advance dialogue and gate everything else
+      // 1. Handle Escape key to pause/unpause the game
+      if (keysPressed.contains(LogicalKeyboardKey.escape)) {
+        if (paused) {
+          paused = false;
+          overlays.remove('pause');
+        } else {
+          paused = true;
+          overlays.add('pause');
+        }
+        return KeyEventResult.handled;
+      }
+
+      // 2. Handle Restart Key (KeyR)
+      if (keysPressed.contains(LogicalKeyboardKey.keyR)) {
+        if (currentLevelConfig != null) {
+          loadLevel(currentLevelConfig!);
+        }
+        return KeyEventResult.handled;
+      }
+
+      // 3. If dialogue is active, handle Enter key to advance dialogue and gate everything else
       if (isInputGated) {
         if (keysPressed.contains(LogicalKeyboardKey.enter)) {
           advanceDialogue();
@@ -223,16 +257,25 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
         return KeyEventResult.handled;
       }
 
-      // 2. Debug key 'B' to unlock and display backstory
+      // 4. Debug key 'B' to unlock and display backstory
       if (keysPressed.contains(LogicalKeyboardKey.keyB)) {
         unlockCurrentHeroBackstory();
         return KeyEventResult.handled;
       }
 
-      // 3. Toggle / switch between heroes using Tab or Q
+      // 5. Toggle / switch between heroes using Tab or Q
       if (keysPressed.contains(LogicalKeyboardKey.tab) ||
           keysPressed.contains(LogicalKeyboardKey.keyQ)) {
-        cycleHero();
+        if (currentLevelConfig == null || currentLevelConfig!.heroId == 'team') {
+          cycleHero();
+        } else {
+          showDialogue([
+            StoryEntry(
+              speakerName: 'System',
+              text: 'Hero switching is locked for Solo Mission: ${currentLevelConfig!.displayName}.',
+            )
+          ]);
+        }
         return KeyEventResult.handled;
       }
     }
@@ -296,6 +339,48 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents {
 
     // 4. Smoothly shift camera to new active hero
     camera.follow(newHero);
+  }
+
+  Future<void> loadLevel(LevelConfig config) async {
+    currentLevelConfig = config;
+    await parallaxBackground.changeLevelBackground(config.backgroundAssetPath);
+
+    // Enforce hero requirements (force active hero according to level assignment)
+    if (config.heroId != 'team') {
+      final reqHeroIndex = heroes.indexWhere(
+        (h) => h.heroName.toLowerCase() == config.heroId.toLowerCase(),
+      );
+      if (reqHeroIndex != -1 && reqHeroIndex != activeHeroIndex) {
+        final oldHero = activeHero;
+        oldHero.isActive = false;
+        activeIndicator.removeFromParent();
+
+        activeHeroIndex = reqHeroIndex;
+
+        final newHero = activeHero;
+        newHero.isActive = true;
+        activeIndicator.position = Vector2(0, -newHero.size.y / 2 - 10);
+        await newHero.add(activeIndicator);
+
+        camera.follow(newHero);
+      }
+    }
+
+    // Reset hero position to start of level
+    activeHero.position = Vector2(100, 100);
+    activeHero.velocity.setZero();
+
+    // Play level's introSequence if present
+    if (config.introSequence != null && config.introSequence!.isNotEmpty) {
+      showDialogue(config.introSequence!);
+    } else {
+      showDialogue([
+        StoryEntry(
+          speakerName: 'System',
+          text: 'Entering Level: ${config.displayName}',
+        ),
+      ]);
+    }
   }
 }
 
