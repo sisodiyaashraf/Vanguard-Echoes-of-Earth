@@ -8,6 +8,7 @@ class LevelConfig {
   final String backgroundAssetPath;
   final Vector2 levelSize;
   final List<StoryEntry>? introSequence;
+  final List<Vector2>? enemySpawnPoints;
 
   const LevelConfig({
     required this.id,
@@ -16,5 +17,6 @@ class LevelConfig {
     required this.backgroundAssetPath,
     required this.levelSize,
     this.introSequence,
+    this.enemySpawnPoints,
   });
 }

@@ -18,6 +18,10 @@ class LevelRegistry {
           text: 'Entering Ashfall Ruins. The air is thick with smoke... it feels exactly like the day I lost my sibling.',
         ),
       ],
+      enemySpawnPoints: [
+        Vector2(600, 386),
+        Vector2(1200, 386),
+      ],
     ),
     LevelConfig(
       id: 'dragon_2',
@@ -61,6 +65,10 @@ class LevelRegistry {
           portraitAssetPath: 'assets/images/characters/Hero 2 T-Rex (Seismic Hammer).png',
           text: 'Back in the mineshafts... This is where my ambition buried my team. I won\'t let anyone down this time.',
         ),
+      ],
+      enemySpawnPoints: [
+        Vector2(800, 386),
+        Vector2(1400, 386),
       ],
     ),
     LevelConfig(
@@ -236,6 +244,11 @@ class LevelRegistry {
           speakerName: 'Narrator',
           text: 'The Vanguard stands united at the gates of the Hollow Base. Five souls, one final destiny.',
         ),
+      ],
+      enemySpawnPoints: [
+        Vector2(600, 386),
+        Vector2(1000, 386),
+        Vector2(1500, 386),
       ],
     ),
     LevelConfig(

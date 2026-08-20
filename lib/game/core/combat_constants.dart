@@ -1,3 +1,5 @@
+enum EnemyAnimState { idle, chase, attack, hurt, dead }
+
 class CombatConstants {
   static const double meleeAttackDuration = 0.35;
 
@@ -28,5 +30,20 @@ class CombatConstants {
   static const double holoCloneCooldown = 2.0;
   static const int holoCloneEnergyCost = 35;
   static const double holoCloneDuration = 2.0;
+
+  // Damage Constants
+  static const int basicAttackDamage = 15;
+  static const int plasmaDamage = 30;
+  static const int seismicDamage = 40;
+  static const int temporalDamage = 25;
+  static const int waterBladeDamage = 20;
+
+  // Enemy Combat Statistics
+  static const int enemyMaxHealth = 50;
+  static const int enemyContactDamage = 10;
+  static const double enemySpeed = 80.0;
+  static const double enemyAggroRange = 150.0;
+  static const double enemyAttackRange = 40.0;
+  static const double enemyContactDamageCooldown = 1.0;
 }
 

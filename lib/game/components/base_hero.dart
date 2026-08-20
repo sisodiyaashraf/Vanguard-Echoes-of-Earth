@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flame/components.dart';
+import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vanguard_echoes_of_earth/game/core/physics_constants.dart';
@@ -7,6 +8,7 @@ import 'package:vanguard_echoes_of_earth/game/core/hero_stats.dart';
 import 'package:vanguard_echoes_of_earth/game/core/hero_input_state.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/components/dust_particle.dart';
+import 'package:vanguard_echoes_of_earth/game/components/melee_strike.dart';
 
 enum HeroState { idle, run, jump, attack, superpower, transformation }
 
@@ -64,6 +66,12 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     await super.onLoad();
     size = Vector2.all(128);
     anchor = Anchor.center;
+
+    // Add central hitbox for receiving enemy contact damage
+    add(RectangleHitbox(
+      size: Vector2(40, 90),
+      position: Vector2(44, 19),
+    ));
   }
 
   // Helper utility to load horizontal animation sheets of varying dimensions
@@ -372,6 +380,17 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     _attackTimeRemaining = meleeAttackDuration;
     current = HeroState.attack;
     animationTicker?.reset();
+
+    // Spawn melee strike hitbox component in front of the active hero
+    final direction = scale.x.sign;
+    final strikeSize = Vector2(80, 80);
+    // Positioned in front of the center of the hero
+    final strikePos = position + Vector2(direction * 60, 0);
+    final strike = MeleeStrike(
+      position: strikePos,
+      size: strikeSize,
+    );
+    game.world.add(strike);
   }
 
   void _firePower() {
