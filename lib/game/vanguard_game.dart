@@ -417,6 +417,21 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
         }
       }
     }
+
+    // Constrain camera viewfinder within level bounds
+    if (currentLevelConfig != null) {
+      final visibleSize = camera.viewfinder.visibleGameSize ?? Vector2(640, 360);
+      final halfWidth = visibleSize.x / 2;
+      final halfHeight = visibleSize.y / 2;
+      
+      double camX = camera.viewfinder.position.x;
+      double camY = camera.viewfinder.position.y;
+      
+      camX = camX.clamp(halfWidth, currentLevelConfig!.levelSize.x - halfWidth);
+      camY = camY.clamp(halfHeight, currentLevelConfig!.levelSize.y - halfHeight);
+      
+      camera.viewfinder.position = Vector2(camX, camY);
+    }
   }
 
   void _completeLevel() {

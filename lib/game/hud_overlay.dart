@@ -34,6 +34,23 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
+  Color _getHeroColor(String heroName) {
+    switch (heroName.toLowerCase()) {
+      case 'dragon':
+        return const Color(0xFFFF4500);
+      case 't-rex':
+        return const Color(0xFFFFD700);
+      case 'curator':
+        return const Color(0xFF9400D3);
+      case 'shark':
+        return const Color(0xFF1E90FF);
+      case 'kitsune':
+        return const Color(0xFF00FFCC);
+      default:
+        return const Color(0xFFFF007F);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!widget.game.isLoaded) {
@@ -42,6 +59,7 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
 
     final hero = widget.game.activeHero;
     final stats = hero.stats;
+    final activeHeroColor = _getHeroColor(hero.heroName);
 
     final healthPercent = (stats.currentHealth / stats.maxHealth).clamp(0.0, 1.0);
     final energyPercent = (stats.currentEnergy / stats.maxEnergy).clamp(0.0, 1.0);
@@ -59,21 +77,29 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
             left: 16,
             top: 16,
             child: SafeArea(
+              left: false,
+              right: false,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.55),
+                  color: Colors.black.withValues(alpha: 0.65),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.12),
-                    width: 1.0,
+                    color: activeHeroColor.withValues(alpha: 0.4),
+                    width: 1.5,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: activeHeroColor.withValues(alpha: 0.15),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Title and levels button row
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -90,7 +116,7 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
                         Text(
                           'VANGUARD',
                           style: GoogleFonts.pressStart2p(
-                            color: UiConstants.primaryGlow,
+                            color: activeHeroColor,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -104,25 +130,25 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: UiConstants.primaryGlow.withValues(alpha: 0.5),
+                                color: activeHeroColor.withValues(alpha: 0.5),
                                 width: 1.0,
                               ),
                               borderRadius: BorderRadius.circular(4),
-                              color: UiConstants.primaryGlow.withValues(alpha: 0.1),
+                              color: activeHeroColor.withValues(alpha: 0.1),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.exit_to_app,
                                   size: 10,
-                                  color: UiConstants.primaryGlow,
+                                  color: activeHeroColor,
                                 ),
                                 const SizedBox(width: 3),
                                 Text(
                                   'EXIT',
                                   style: GoogleFonts.pressStart2p(
-                                    color: UiConstants.primaryGlow,
+                                    color: activeHeroColor,
                                     fontSize: 6,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -199,7 +225,6 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Melee Action Indicator
                   _buildAbilityIcon(
                     sprite: widget.game.meleeSprite,
                     cooldownPercent: 0,
@@ -208,13 +233,11 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
                     isReady: !hero.isAttacking,
                   ),
                   const SizedBox(width: 8),
-
-                  // Power Action Indicator
                   _buildAbilityIcon(
                     sprite: _getPowerSprite(widget.game),
                     cooldownPercent: powerCooldownPercent,
                     cooldownText: powerCooldown > 0 ? '${powerCooldown.toStringAsFixed(1)}s' : '',
-                    glowColor: const Color(0xFF9C27B0).withValues(alpha: 0.5),
+                    glowColor: activeHeroColor.withValues(alpha: 0.5),
                     isReady: powerCooldown <= 0 && stats.currentEnergy >= hero.powerEnergyCost,
                   ),
                 ],
@@ -271,6 +294,20 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
               child: Container(
                 decoration: BoxDecoration(
                   gradient: fillColor,
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withValues(alpha: 0.18),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
               ),
             ),
