@@ -88,7 +88,7 @@ class DragonHero extends BaseHero {
   }
 
   @override
-  double get groundContactOffset => 4.0;
+  double get groundContactOffset => 2.0;
 
   @override
   void spawnPower() {

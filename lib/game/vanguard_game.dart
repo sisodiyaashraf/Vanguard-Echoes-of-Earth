@@ -84,13 +84,12 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
   Future<void> onLoad() async {
     await super.onLoad();
 
-    // Set up camera with a fixed resolution viewport and viewfinder visible game size
-    camera = CameraComponent.withFixedResolution(width: 1280, height: 720);
+    // Configure the default camera's viewfinder visible game size
     camera.viewfinder.visibleGameSize = Vector2(640, 360);
 
     // Initialize background parallax first to render behind everything
     parallaxBackground = ParallaxBackground();
-    await world.add(parallaxBackground);
+    await add(parallaxBackground);
 
     // Load the UI sprite sheet
     final uiSheet = await images.load('characters/UI elements (icons, not animated).png');
@@ -396,7 +395,10 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
     super.update(dt);
 
     if (joystick != null) {
-      if (joystick!.relativeDelta.length > 0) {
+      if (isInputGated || paused) {
+        joystick!.relativeDelta.setZero();
+        activeHero.inputState.joystickMoveX = 0.0;
+      } else if (joystick!.relativeDelta.length > 0) {
         activeHero.inputState.joystickMoveX = joystick!.relativeDelta.x;
       } else {
         activeHero.inputState.joystickMoveX = 0.0;
@@ -425,7 +427,8 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
       final halfHeight = visibleSize.y / 2;
       
       double camX = camera.viewfinder.position.x;
-      double camY = camera.viewfinder.position.y;
+      // Shift camera Y position up by 90 units to push the ground platform down to the bottom ~15% of screen
+      double camY = camera.viewfinder.position.y - 90;
       
       camX = camX.clamp(halfWidth, currentLevelConfig!.levelSize.x - halfWidth);
       camY = camY.clamp(halfHeight, currentLevelConfig!.levelSize.y - halfHeight);
@@ -528,9 +531,11 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
   }
 
   void cycleHero() {
-    // 1. Deactivate old active hero and remove indicator
+    // 1. Deactivate old active hero and reset its inputs/velocity to stop moving
     final oldHero = activeHero;
     oldHero.isActive = false;
+    oldHero.inputState.reset();
+    oldHero.velocity.setZero();
     activeIndicator.removeFromParent();
 
     // 2. Increment and wrap index

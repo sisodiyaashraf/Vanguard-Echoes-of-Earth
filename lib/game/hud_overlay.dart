@@ -68,10 +68,8 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
     final powerMaxCooldown = hero.powerCooldown;
     final powerCooldownPercent = (powerCooldown / powerMaxCooldown).clamp(0.0, 1.0);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
+    return Stack(
+      children: [
           // --- TOP-LEFT COMPACT HUD PANEL ---
           Positioned(
             left: 16,
@@ -245,8 +243,7 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
             ),
           ),
         ],
-      ),
-    );
+      );
   }
 
   Sprite _getPowerSprite(VanguardGame game) {

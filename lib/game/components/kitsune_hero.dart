@@ -95,7 +95,7 @@ class KitsuneHero extends BaseHero {
   }
 
   @override
-  double get groundContactOffset => 8.0;
+  double get groundContactOffset => 3.0;
 
   @override
   void spawnPower() {

@@ -4,12 +4,9 @@ import 'package:flutter/widgets.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 
 class ParallaxBackground extends ParallaxComponent<VanguardGame> {
-  double? _lastCamX;
-
-  ParallaxBackground();
+  ParallaxBackground() : super(priority: -10);
 
   Future<void> changeLevelBackground(String assetPath) async {
-    _lastCamX = null;
     parallax = await game.loadParallax(
       [
         ParallaxImageData(assetPath),
@@ -25,19 +22,13 @@ class ParallaxBackground extends ParallaxComponent<VanguardGame> {
   void update(double dt) {
     super.update(dt);
     
-    // Keep background centered on camera and scaled to camera visible size
-    position = game.camera.viewfinder.position;
-    anchor = Anchor.center;
-    size = game.camera.viewfinder.visibleGameSize ?? Vector2(640, 360);
+    // Fill the entire screen canvas (screen coordinates)
+    position = Vector2.zero();
+    size = game.size;
 
     if (parallax != null) {
-      final currentCamX = game.camera.viewfinder.position.x;
-      _lastCamX ??= currentCamX;
-      final diffX = currentCamX - _lastCamX!;
-      _lastCamX = currentCamX;
-      
-      // Scroll by setting baseVelocity proportional to camera speed
-      parallax!.baseVelocity.x = dt > 0 ? -diffX / dt * 0.18 : 0.0;
+      // Scroll the background layers proportional to active hero's velocity
+      parallax!.baseVelocity.x = -game.activeHero.velocity.x * 0.12;
     }
   }
 }
