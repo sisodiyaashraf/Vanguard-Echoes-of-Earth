@@ -97,6 +97,9 @@ class CuratorHero extends BaseHero {
   }
 
   @override
+  double get groundContactOffset => 4.0;
+
+  @override
   void spawnPower() {
     final direction = scale.x.sign;
     final spawnOffset = Vector2(direction * 80.0, 0.0);

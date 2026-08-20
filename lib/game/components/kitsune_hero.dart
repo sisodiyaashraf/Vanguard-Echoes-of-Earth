@@ -95,6 +95,9 @@ class KitsuneHero extends BaseHero {
   }
 
   @override
+  double get groundContactOffset => 8.0;
+
+  @override
   void spawnPower() {
     // Trigger Holo Clone decoy ambush
     spawnHoloCloneAmbush(game, position, scale.x);

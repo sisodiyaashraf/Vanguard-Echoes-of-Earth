@@ -27,4 +27,20 @@ class SaveManager {
   static int getUnlockedBackstoryCount(String heroId) {
     return _prefs?.getInt('backstory_$heroId') ?? 0;
   }
+
+  static Future<void> saveBgmVolume(double vol) async {
+    await _prefs?.setDouble('bgm_volume', vol);
+  }
+
+  static double getBgmVolume() {
+    return _prefs?.getDouble('bgm_volume') ?? 0.7;
+  }
+
+  static Future<void> saveSfxVolume(double vol) async {
+    await _prefs?.setDouble('sfx_volume', vol);
+  }
+
+  static double getSfxVolume() {
+    return _prefs?.getDouble('sfx_volume') ?? 0.7;
+  }
 }

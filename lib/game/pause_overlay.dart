@@ -98,7 +98,7 @@ class PauseOverlay extends StatelessWidget {
                 onPressed: () {
                   game.paused = false;
                   game.overlays.remove('pause');
-                  game.overlays.add('level_selection');
+                  Navigator.pop(context);
                 },
                 child: const Text('LEVEL SELECT'),
               ),

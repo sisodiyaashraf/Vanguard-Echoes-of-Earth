@@ -69,16 +69,26 @@ class DragonHero extends BaseHero {
       0.15,
     );
 
+    final transformationAnimation = await loadHorizontalAnimation(
+      'characters/ChatGPT Image Aug 18 2026 11_38_26 A-60kb.png',
+      4,
+      0.15,
+    );
+
     animations = {
       HeroState.idle: idleAnimation,
       HeroState.run: runAnimation,
       HeroState.jump: jumpAnimation,
       HeroState.attack: attackAnimation,
       HeroState.superpower: superpowerAnimation,
+      HeroState.transformation: transformationAnimation,
     };
 
     current = HeroState.idle;
   }
+
+  @override
+  double get groundContactOffset => 4.0;
 
   @override
   void spawnPower() {

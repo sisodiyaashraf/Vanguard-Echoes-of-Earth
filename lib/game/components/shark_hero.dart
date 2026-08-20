@@ -97,6 +97,9 @@ class SharkHero extends BaseHero {
   }
 
   @override
+  double get groundContactOffset => 0.0;
+
+  @override
   void spawnPower() {
     final direction = scale.x.sign;
     final spawnOffset = Vector2(direction * 50.0, 0.0);

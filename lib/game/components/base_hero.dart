@@ -32,6 +32,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
   double _powerCooldownRemaining = 0.0;
   double _superpowerTimeRemaining = 0.0;
   double _transformationTimeRemaining = 0.0;
+  double _meleeHitboxDelay = 0.0;
 
   // Coyote time & input buffering
   double _coyoteTimeRemaining = 0.0;
@@ -57,6 +58,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
   double get meleeAttackDuration;
   double get powerCooldown;
   int get powerEnergyCost;
+  double get groundContactOffset;
   void spawnPower();
 
   BaseHero({
@@ -114,15 +116,28 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     // Decrement combat and state timers
     _updateTimers(dt);
 
+    // Melee hitbox delay handler
+    if (_meleeHitboxDelay > 0.0) {
+      _meleeHitboxDelay -= dt;
+      if (_meleeHitboxDelay <= 0.0) {
+        _meleeHitboxDelay = 0.0;
+        final direction = scale.x.sign;
+        final strikeSize = Vector2(80, 80);
+        final strikePos = position + Vector2(direction * 60, 0);
+        final strike = MeleeStrike(
+          position: strikePos,
+          size: strikeSize,
+        );
+        game.world.add(strike);
+      }
+    }
+
     // Passive energy regen (5 energy per second)
     _regenAccumulator += dt;
     if (_regenAccumulator >= 1.0) {
       stats.regenEnergy(5);
       _regenAccumulator -= 1.0;
     }
-
-    // Apply gravity
-    velocity.y += PhysicsConstants.gravity * dt;
 
     // Gate all input if dialogue overlay is active
     if (game.isInputGated) {
@@ -162,7 +177,24 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
 
     final effectiveHorizontalInput = (isLocked || game.isInputGated) ? 0.0 : inputState.moveX;
     
-    position.x += effectiveHorizontalInput * PhysicsConstants.moveSpeed * dt;
+    // Horizontal Movement Acceleration & Deceleration (Friction)
+    if (effectiveHorizontalInput != 0.0) {
+      velocity.x = effectiveHorizontalInput * PhysicsConstants.moveSpeed;
+    } else {
+      const double lerpFactor = 12.0;
+      velocity.x = velocity.x * (1.0 - lerpFactor * dt).clamp(0.0, 1.0);
+      if (velocity.x.abs() < 1.0) {
+        velocity.x = 0.0;
+      }
+    }
+
+    // Gravity and max fall clamp
+    if (!isGrounded) {
+      velocity.y += PhysicsConstants.gravity * dt;
+    }
+    velocity.y = velocity.y.clamp(-1000.0, 700.0);
+
+    position.x += velocity.x * dt;
     position.y += velocity.y * dt;
 
     // Collision detection with Platform components
@@ -176,10 +208,11 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
       final groundRight = platform.position.x + platform.size.x;
 
       if (position.x + halfWidth > groundLeft && position.x - halfWidth < groundRight) {
+        final visualFeetY = position.y + halfHeight - groundContactOffset;
         if (velocity.y >= 0 &&
-            position.y + halfHeight >= groundTop &&
-            position.y + halfHeight - velocity.y * dt <= groundTop + 10) {
-          position.y = groundTop - halfHeight;
+            visualFeetY >= groundTop &&
+            visualFeetY - velocity.y * dt <= groundTop + 10) {
+          position.y = groundTop - halfHeight + groundContactOffset;
           velocity.y = 0;
           isGrounded = true;
           onAnyPlatform = true;
@@ -356,6 +389,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     _powerCooldownRemaining = 0.0;
     _superpowerTimeRemaining = 0.0;
     _transformationTimeRemaining = 0.0;
+    _meleeHitboxDelay = 0.0;
   }
 
   // Combat Helper Methods
@@ -395,17 +429,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     _attackTimeRemaining = meleeAttackDuration;
     current = HeroState.attack;
     animationTicker?.reset();
-
-    // Spawn melee strike hitbox component in front of the active hero
-    final direction = scale.x.sign;
-    final strikeSize = Vector2(80, 80);
-    // Positioned in front of the center of the hero
-    final strikePos = position + Vector2(direction * 60, 0);
-    final strike = MeleeStrike(
-      position: strikePos,
-      size: strikeSize,
-    );
-    game.world.add(strike);
+    _meleeHitboxDelay = 0.12; // Spawn hitbox at impact frame
   }
 
   void _firePower() {
@@ -437,6 +461,14 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
       current = HeroState.run;
     } else {
       current = HeroState.idle;
+    }
+  }
+
+  void triggerTransformation() {
+    if (animations?[HeroState.transformation] != null) {
+      _transformationTimeRemaining = 0.60;
+      current = HeroState.transformation;
+      animationTicker?.reset();
     }
   }
 }

@@ -93,8 +93,7 @@ class GameOverOverlay extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  game.overlays.remove('game_over');
-                  game.overlays.add('level_selection');
+                  Navigator.pop(context);
                 },
                 child: const Text('LEVEL SELECT', style: TextStyle(letterSpacing: 1.0)),
               ),

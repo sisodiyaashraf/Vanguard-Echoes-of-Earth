@@ -15,7 +15,6 @@ import 'package:vanguard_echoes_of_earth/game/components/platform.dart';
 import 'package:vanguard_echoes_of_earth/game/story/story_entry.dart';
 import 'package:vanguard_echoes_of_earth/game/story/hero_backstory.dart';
 import 'package:vanguard_echoes_of_earth/game/levels/level_config.dart';
-import 'package:vanguard_echoes_of_earth/game/levels/level_registry.dart';
 import 'package:vanguard_echoes_of_earth/game/components/parallax_background.dart';
 import 'package:vanguard_echoes_of_earth/game/components/hud_buttons.dart';
 import 'package:vanguard_echoes_of_earth/game/components/hollow_enemy.dart';
@@ -28,13 +27,17 @@ import 'package:vanguard_echoes_of_earth/game/core/game_state.dart';
 import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 
 class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
+  final LevelConfig initialLevelConfig;
   JoystickComponent? joystick;
   GameState gameState = GameState.playing;
-  
+  bool hasPlayedTransformation = false;
+
   // Hero Switching State
-  late final List<BaseHero> heroes;
+  late List<BaseHero> heroes;
   int activeHeroIndex = 0;
   BaseHero get activeHero => heroes[activeHeroIndex];
+
+  VanguardGame({required this.initialLevelConfig});
 
   // Story / Dialogue State
   final ValueNotifier<StoryEntry?> currentDialogueNotifier = ValueNotifier<StoryEntry?>(null);
@@ -104,14 +107,6 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
     // Initialize SharedPreferences SaveManager
     await SaveManager.init();
 
-    // Load persisted backstory unlocks for all heroes
-    backstories.forEach((heroName, backstory) {
-      final unlockedCount = SaveManager.getUnlockedBackstoryCount(heroName);
-      for (int i = 0; i < unlockedCount; i++) {
-        backstory.unlockNext();
-      }
-    });
-
     // Create the initial platform in world space
     final initialPlatform = Platform(
       position: Vector2(0, 450),
@@ -119,29 +114,7 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
     );
     await world.add(initialPlatform);
 
-    // Initialize all 5 heroes in fixed order, slightly spread out horizontally
-    heroes = [
-      DragonHero(position: Vector2(100, 386)),
-      TRexHero(position: Vector2(200, 386)),
-      CuratorHero(position: Vector2(300, 386)),
-      SharkHero(position: Vector2(400, 386)),
-      KitsuneHero(position: Vector2(500, 386)),
-    ];
-
-    for (var h in heroes) {
-      await world.add(h);
-    }
-
-    // Set Dragon as active by default
-    heroes[0].isActive = true;
-
-    // Attach visual indicator above the active hero
     activeIndicator = ActiveIndicator();
-    activeIndicator.position = Vector2(0, -heroes[0].size.y / 2 - 10);
-    await heroes[0].add(activeIndicator);
-
-    // Configure the camera to follow the hero
-    camera.follow(heroes[0]);
 
     // Create virtual joystick and action buttons for touch devices on the camera viewport
     joystick = JoystickComponent(
@@ -340,8 +313,16 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
       ),
     };
 
-    // Load first level by default
-    await loadLevel(LevelRegistry.levels[0]);
+    // Load persisted backstory unlocks for all heroes
+    backstories.forEach((heroName, backstory) {
+      final unlockedCount = SaveManager.getUnlockedBackstoryCount(heroName);
+      for (int i = 0; i < unlockedCount; i++) {
+        backstory.unlockNext();
+      }
+    });
+
+    // Load selected level
+    await loadLevel(initialLevelConfig);
 
     // Play intro sequence
     showDialogue(introSequence);
@@ -444,7 +425,7 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
 
     // Play win BGM/SFX and stop current music
     FlameAudio.bgm.stop();
-    FlameAudio.play('win.wav');
+    FlameAudio.play('win.wav', volume: SaveManager.getSfxVolume());
 
     // Save completed level
     if (currentLevelConfig != null) {
@@ -497,6 +478,9 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
         // Freeze gameplay and show complete menu
         paused = true;
         overlays.add('level_complete');
+      } else if (gameState == GameState.playing && !hasPlayedTransformation) {
+        hasPlayedTransformation = true;
+        activeHero.triggerTransformation();
       }
     }
   }
@@ -506,7 +490,7 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
     gameState = GameState.gameOver;
     paused = true;
     FlameAudio.bgm.stop();
-    FlameAudio.play('game_over.wav');
+    FlameAudio.play('game_over.wav', volume: SaveManager.getSfxVolume());
     overlays.add('game_over');
   }
 
@@ -565,17 +549,42 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
     }
   }
 
+  void playBgm(String file) {
+    final vol = SaveManager.getBgmVolume();
+    FlameAudio.bgm.play(file);
+    try {
+      FlameAudio.bgm.audioPlayer.setVolume(vol);
+    } catch (_) {}
+  }
+
+  BaseHero _createHeroById(String id) {
+    switch (id.toLowerCase()) {
+      case 'dragon':
+        return DragonHero();
+      case 't-rex':
+        return TRexHero();
+      case 'curator':
+        return CuratorHero();
+      case 'shark':
+        return SharkHero();
+      case 'kitsune':
+      default:
+        return KitsuneHero();
+    }
+  }
+
   Future<void> loadLevel(LevelConfig config) async {
     currentLevelConfig = config;
     gameState = GameState.playing;
     paused = false;
+    hasPlayedTransformation = false;
     overlays.remove('game_over');
     overlays.remove('level_complete');
     overlays.remove('pause');
 
     await parallaxBackground.changeLevelBackground(config.backgroundAssetPath);
 
-    // Remove all existing platforms, enemies, and projectiles from the world
+    // Remove all existing platforms, enemies, projectiles and heroes from the world
     final existingPlatforms = world.children.whereType<Platform>();
     for (var platform in existingPlatforms.toList()) {
       platform.removeFromParent();
@@ -597,6 +606,11 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
       proj.removeFromParent();
     }
 
+    final existingHeroes = world.children.whereType<BaseHero>();
+    for (var h in existingHeroes.toList()) {
+      h.removeFromParent();
+    }
+
     // Spawn platforms from config, or default flat platform
     if (config.platforms != null && config.platforms!.isNotEmpty) {
       for (var platData in config.platforms!) {
@@ -615,32 +629,41 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
       await world.add(platform);
     }
 
-    // Enforce hero requirements (force active hero according to level assignment)
-    if (config.heroId != 'team') {
-      final reqHeroIndex = heroes.indexWhere(
-        (h) => h.heroName.toLowerCase() == config.heroId.toLowerCase(),
-      );
-      if (reqHeroIndex != -1 && reqHeroIndex != activeHeroIndex) {
-        final oldHero = activeHero;
-        oldHero.isActive = false;
-        activeIndicator.removeFromParent();
-
-        activeHeroIndex = reqHeroIndex;
-
-        final newHero = activeHero;
-        newHero.isActive = true;
-        activeIndicator.position = Vector2(0, -newHero.size.y / 2 - 10);
-        await newHero.add(activeIndicator);
-
-        camera.follow(newHero);
+    // Spawn selected hero (or all 5 for team level)
+    if (config.heroId == 'team') {
+      heroes = [
+        DragonHero(),
+        TRexHero(),
+        CuratorHero(),
+        SharkHero(),
+        KitsuneHero(),
+      ];
+      for (var h in heroes) {
+        await world.add(h);
       }
+      activeHeroIndex = 0;
+      heroes[0].isActive = true;
+      activeIndicator.removeFromParent();
+      activeIndicator.position = Vector2(0, -heroes[0].size.y / 2 - 10);
+      await heroes[0].add(activeIndicator);
+      camera.follow(heroes[0]);
+    } else {
+      final singleHero = _createHeroById(config.heroId);
+      heroes = [singleHero];
+      await world.add(singleHero);
+      activeHeroIndex = 0;
+      singleHero.isActive = true;
+      activeIndicator.removeFromParent();
+      activeIndicator.position = Vector2(0, -singleHero.size.y / 2 - 10);
+      await singleHero.add(activeIndicator);
+      camera.follow(singleHero);
     }
 
     final startY = (config.platforms != null && config.platforms!.isNotEmpty)
         ? config.platforms!.first.position.y
         : config.levelSize.y - 150;
 
-    // Spread all heroes out on the ground
+    // Spread all spawned heroes out on the ground
     for (int i = 0; i < heroes.length; i++) {
       heroes[i].position = Vector2(100.0 + (i * 100.0), startY - heroes[i].size.y / 2);
       heroes[i].velocity.setZero();
@@ -666,9 +689,9 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
       }
     }
 
-    // Play looping theme music
+    // Play looping theme music with saved volume
     final bgmFile = _getBgmForHero(config.heroId);
-    FlameAudio.bgm.play(bgmFile);
+    playBgm(bgmFile);
 
     // Play level's introSequence if present
     if (config.introSequence != null && config.introSequence!.isNotEmpty) {

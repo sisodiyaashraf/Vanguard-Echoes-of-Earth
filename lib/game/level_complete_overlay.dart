@@ -15,7 +15,10 @@ class LevelCompleteOverlay extends StatelessWidget {
     if (currentConfig != null) {
       nextLevelIndex = LevelRegistry.levels.indexWhere((l) => l.id == currentConfig.id) + 1;
     }
-    final hasNextLevel = nextLevelIndex > 0 && nextLevelIndex < LevelRegistry.levels.length;
+    final hasNextLevel = nextLevelIndex > 0 &&
+        nextLevelIndex < LevelRegistry.levels.length &&
+        currentConfig != null &&
+        LevelRegistry.levels[nextLevelIndex].heroId == currentConfig.heroId;
 
     return Material(
       color: Colors.black.withValues(alpha: 0.85),
@@ -104,8 +107,7 @@ class LevelCompleteOverlay extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  game.overlays.remove('level_complete');
-                  game.overlays.add('level_selection');
+                  Navigator.pop(context);
                 },
                 child: const Text('LEVEL SELECT', style: TextStyle(letterSpacing: 1.0)),
               ),

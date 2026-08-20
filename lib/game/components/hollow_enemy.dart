@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
@@ -12,6 +13,7 @@ import 'package:vanguard_echoes_of_earth/game/components/seismic_slam.dart';
 import 'package:vanguard_echoes_of_earth/game/components/temporal_wave.dart';
 import 'package:vanguard_echoes_of_earth/game/components/water_blade_barrage.dart';
 import 'package:vanguard_echoes_of_earth/game/components/platform.dart';
+import 'package:vanguard_echoes_of_earth/game/components/element_particle.dart';
 
 class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     with HasGameReference<VanguardGame>, CollisionCallbacks {
@@ -229,6 +231,42 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     _hurtTimer = 0.15;
     current = EnemyAnimState.hurt;
     animationTicker?.reset();
+
+    // Spawn element-colored hit particles
+    final heroName = game.activeHero.heroName;
+    Color particleColor;
+    switch (heroName) {
+      case 'Dragon':
+        particleColor = const Color(0xFFFF4500);
+        break;
+      case 'T-Rex':
+        particleColor = const Color(0xFFFFD700);
+        break;
+      case 'Curator':
+        particleColor = const Color(0xFF9400D3);
+        break;
+      case 'Shark':
+        particleColor = const Color(0xFF1E90FF);
+        break;
+      case 'Kitsune':
+      default:
+        particleColor = const Color(0xFF00FFCC);
+        break;
+    }
+
+    final rand = Random();
+    for (int i = 0; i < 8; i++) {
+      final angle = rand.nextDouble() * 2 * pi;
+      final speed = 50 + rand.nextDouble() * 100;
+      final vel = Vector2(cos(angle) * speed, sin(angle) * speed - 50);
+      game.world.add(ElementParticle(
+        position: position.clone(),
+        velocity: vel,
+        color: particleColor,
+        radius: 3.0 + rand.nextDouble() * 3.0,
+        duration: 0.3 + rand.nextDouble() * 0.3,
+      ));
+    }
 
     // Play hit SFX
     if (source is MeleeStrike) {

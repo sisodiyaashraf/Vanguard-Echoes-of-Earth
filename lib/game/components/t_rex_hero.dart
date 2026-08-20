@@ -97,6 +97,9 @@ class TRexHero extends BaseHero {
   }
 
   @override
+  double get groundContactOffset => 0.0;
+
+  @override
   void spawnPower() {
     // Spawn Seismic Slam ground effect at feet
     final feetPosition = position.clone() + Vector2(0, size.y / 2);
