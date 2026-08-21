@@ -8,6 +8,7 @@ import 'package:vanguard_echoes_of_earth/game/pause_overlay.dart';
 import 'package:vanguard_echoes_of_earth/game/game_over_overlay.dart';
 import 'package:vanguard_echoes_of_earth/game/level_complete_overlay.dart';
 import 'package:vanguard_echoes_of_earth/game/levels/level_config.dart';
+import 'package:vanguard_echoes_of_earth/game/tutorial_overlay.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -38,6 +39,7 @@ class _GameScreenState extends State<GameScreen> {
           'pause': (context, game) => PauseOverlay(game: game),
           'game_over': (context, game) => GameOverOverlay(game: game),
           'level_complete': (context, game) => LevelCompleteOverlay(game: game),
+          'tutorial': (context, game) => TutorialOverlay(game: game),
         },
         initialActiveOverlays: const ['hud'],
       ),

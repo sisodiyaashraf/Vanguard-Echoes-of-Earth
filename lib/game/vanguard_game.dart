@@ -25,6 +25,8 @@ import 'package:vanguard_echoes_of_earth/game/components/temporal_wave.dart';
 import 'package:vanguard_echoes_of_earth/game/components/water_blade_barrage.dart';
 import 'package:vanguard_echoes_of_earth/game/core/game_state.dart';
 import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
+import 'package:vanguard_echoes_of_earth/game/components/hollow_boss.dart';
+import 'package:vanguard_echoes_of_earth/game/core/tutorial_controller.dart';
 
 class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
   final LevelConfig initialLevelConfig;
@@ -393,6 +395,7 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
   @override
   void update(double dt) {
     super.update(dt);
+    TutorialController.instance.update(this, dt);
 
     if (joystick != null) {
       if (isInputGated || paused) {
@@ -701,11 +704,19 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
     // Spawn Hollow enemies on top of platforms based on config points
     if (config.enemySpawnPoints != null) {
       for (var sp in config.enemySpawnPoints!) {
-        final enemy = HollowEnemy(
-          variant: sp.variant,
-          position: Vector2(sp.position.x, sp.position.y),
-        );
-        await world.add(enemy);
+        if (sp.variant == EnemyVariant.boss) {
+          final boss = HollowBoss(
+            bossType: config.heroId,
+            position: Vector2(sp.position.x, sp.position.y),
+          );
+          await world.add(boss);
+        } else {
+          final enemy = HollowEnemy(
+            variant: sp.variant,
+            position: Vector2(sp.position.x, sp.position.y),
+          );
+          await world.add(enemy);
+        }
       }
     }
 
@@ -713,16 +724,22 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
     final bgmFile = _getBgmForHero(config.heroId);
     playBgm(bgmFile);
 
-    // Play level's introSequence if present
-    if (config.introSequence != null && config.introSequence!.isNotEmpty) {
-      showDialogue(config.introSequence!);
+    // Check for tutorial sequence
+    if ((config.heroId == 'team' && !SaveManager.hasSeenTeamTutorial()) ||
+        (config.heroId != 'team' && !SaveManager.hasSeenTutorial())) {
+      TutorialController.instance.startTutorial(this);
     } else {
-      showDialogue([
-        StoryEntry(
-          speakerName: 'System',
-          text: 'Entering Level: ${config.displayName}',
-        ),
-      ]);
+      // Play level's introSequence if present
+      if (config.introSequence != null && config.introSequence!.isNotEmpty) {
+        showDialogue(config.introSequence!);
+      } else {
+        showDialogue([
+          StoryEntry(
+            speakerName: 'System',
+            text: 'Entering Level: ${config.displayName}',
+          ),
+        ]);
+      }
     }
   }
 }

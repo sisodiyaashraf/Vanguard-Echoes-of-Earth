@@ -4,6 +4,7 @@ import 'package:flame/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/core/ui_constants.dart';
+import 'package:vanguard_echoes_of_earth/game/components/hollow_boss.dart';
 
 class GameHud extends StatefulWidget {
   final VanguardGame game;
@@ -63,6 +64,9 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
 
     final healthPercent = (stats.currentHealth / stats.maxHealth).clamp(0.0, 1.0);
     final energyPercent = (stats.currentEnergy / stats.maxEnergy).clamp(0.0, 1.0);
+
+    final boss = widget.game.world.children.whereType<HollowBoss>().firstOrNull;
+    final showBoss = boss != null && boss.health > 0;
 
     final powerCooldown = hero.powerCooldownRemaining;
     final powerMaxCooldown = hero.powerCooldown;
@@ -242,8 +246,77 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
               ),
             ),
           ),
+          if (showBoss)
+            Positioned(
+              top: 16,
+              left: MediaQuery.of(context).size.width / 2 - 175,
+              child: SafeArea(
+                child: Container(
+                  width: 350,
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.75),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: const Color(0xFFFF3333).withValues(alpha: 0.5),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFF3333).withValues(alpha: 0.2),
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _getBossName(boss.bossType),
+                        style: GoogleFonts.pressStart2p(
+                          color: const Color(0xFFFF3333),
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      _buildProgressBar(
+                        width: 330,
+                        height: 10,
+                        percentage: (boss.health / boss.maxHealth).clamp(0.0, 1.0),
+                        fillColor: const LinearGradient(
+                          colors: [
+                            Color(0xFFD32F2F),
+                            Color(0xFFFF5252),
+                          ],
+                        ),
+                        label: '${boss.health} / ${boss.maxHealth}',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       );
+  }
+
+  String _getBossName(String type) {
+    switch (type.toLowerCase()) {
+      case 'dragon':
+        return 'VOLCANIC HARBINGER';
+      case 't-rex':
+        return 'SEISMIC COLOSSUS';
+      case 'curator':
+        return 'TEMPORAL ANOMALIST';
+      case 'shark':
+        return 'ABYSSAL LEVIATHAN';
+      case 'kitsune':
+        return 'SPECTRAL KITSUNE';
+      default:
+        return 'HOLLOW ENEMY';
+    }
   }
 
   Sprite _getPowerSprite(VanguardGame game) {

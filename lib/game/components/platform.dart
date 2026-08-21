@@ -1,7 +1,16 @@
 import 'dart:ui';
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
+import 'package:flame_audio/flame_audio.dart';
+import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
+import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
+import 'package:vanguard_echoes_of_earth/game/components/melee_strike.dart';
+import 'package:vanguard_echoes_of_earth/game/components/plasma_shockwave.dart';
+import 'package:vanguard_echoes_of_earth/game/components/seismic_slam.dart';
+import 'package:vanguard_echoes_of_earth/game/components/temporal_wave.dart';
+import 'package:vanguard_echoes_of_earth/game/components/water_blade_barrage.dart';
 
-class Platform extends PositionComponent {
+class Platform extends PositionComponent with HasGameReference<VanguardGame>, CollisionCallbacks {
   final bool isBreakable;
 
   Platform({
@@ -9,6 +18,30 @@ class Platform extends PositionComponent {
     super.size,
     this.isBreakable = false,
   });
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    if (isBreakable) {
+      add(RectangleHitbox());
+    }
+  }
+
+  @override
+  void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollisionStart(intersectionPoints, other);
+
+    if (isBreakable) {
+      if (other is MeleeStrike ||
+          other is PlasmaShockwave ||
+          other is SeismicSlam ||
+          other is TemporalWave ||
+          other is WaterBlade) {
+        FlameAudio.play('enemy_death.wav', volume: SaveManager.getSfxVolume());
+        removeFromParent();
+      }
+    }
+  }
 
   @override
   void render(Canvas canvas) {

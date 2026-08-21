@@ -36,6 +36,16 @@ class TRexLevels {
       heroId: 't-rex',
       backgroundAssetPath: 'backgrounds/earth_underground.png',
       levelSize: Vector2(2000, 600),
+      platforms: [
+        PlatformData(position: Vector2(0, 450), size: Vector2(700, 150)),
+        PlatformData(position: Vector2(800, 350), size: Vector2(400, 150)),
+        PlatformData(position: Vector2(1300, 450), size: Vector2(700, 150)),
+      ],
+      enemySpawnPoints: [
+        EnemySpawnData(position: Vector2(300, 386), variant: EnemyVariant.soldier),
+        EnemySpawnData(position: Vector2(1000, 286), variant: EnemyVariant.brute),
+        EnemySpawnData(position: Vector2(1600, 386), variant: EnemyVariant.scout),
+      ],
     ),
     LevelConfig(
       id: 'trex_3',
@@ -43,6 +53,17 @@ class TRexLevels {
       heroId: 't-rex',
       backgroundAssetPath: 'backgrounds/earth_underground.png',
       levelSize: Vector2(2000, 600),
+      platforms: [
+        PlatformData(position: Vector2(0, 450), size: Vector2(600, 150)),
+        PlatformData(position: Vector2(700, 450), size: Vector2(200, 150), isBreakable: true),
+        PlatformData(position: Vector2(1000, 320), size: Vector2(400, 40)),
+        PlatformData(position: Vector2(1500, 450), size: Vector2(500, 150)),
+      ],
+      enemySpawnPoints: [
+        EnemySpawnData(position: Vector2(250, 386), variant: EnemyVariant.soldier),
+        EnemySpawnData(position: Vector2(1200, 256), variant: EnemyVariant.brute),
+        EnemySpawnData(position: Vector2(1700, 386), variant: EnemyVariant.swarm),
+      ],
     ),
     LevelConfig(
       id: 'trex_4',
@@ -50,6 +71,18 @@ class TRexLevels {
       heroId: 't-rex',
       backgroundAssetPath: 'backgrounds/earth_underground.png',
       levelSize: Vector2(2000, 600),
+      platforms: [
+        PlatformData(position: Vector2(0, 450), size: Vector2(500, 150)),
+        PlatformData(position: Vector2(600, 300), size: Vector2(300, 40)),
+        PlatformData(position: Vector2(1000, 450), size: Vector2(400, 150)),
+        PlatformData(position: Vector2(1500, 300), size: Vector2(500, 150)),
+      ],
+      enemySpawnPoints: [
+        EnemySpawnData(position: Vector2(250, 386), variant: EnemyVariant.soldier),
+        EnemySpawnData(position: Vector2(750, 236), variant: EnemyVariant.scout),
+        EnemySpawnData(position: Vector2(1200, 386), variant: EnemyVariant.brute),
+        EnemySpawnData(position: Vector2(1750, 236), variant: EnemyVariant.soldier),
+      ],
     ),
     LevelConfig(
       id: 'trex_5',
@@ -57,6 +90,12 @@ class TRexLevels {
       heroId: 't-rex',
       backgroundAssetPath: 'backgrounds/earth_underground.png',
       levelSize: Vector2(2000, 600),
+      platforms: [
+        PlatformData(position: Vector2(0, 450), size: Vector2(2000, 150)),
+      ],
+      enemySpawnPoints: [
+        EnemySpawnData(position: Vector2(1200, 354), variant: EnemyVariant.boss),
+      ],
     ),
   ];
 }

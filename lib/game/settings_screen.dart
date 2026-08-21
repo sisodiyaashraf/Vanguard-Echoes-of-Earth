@@ -127,6 +127,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 32),
+              Center(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1F2937),
+                    side: const BorderSide(color: Color(0xFF00FFCC), width: 1.5),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                  onPressed: () async {
+                    await SaveManager.setHasSeenTutorial(false);
+                    await SaveManager.setHasSeenTeamTutorial(false);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'TUTORIAL RESET! PLAY ANY LEVEL TO REPLAY.',
+                            style: GoogleFonts.pressStart2p(fontSize: 8, color: Colors.black),
+                          ),
+                          backgroundColor: const Color(0xFF00FFCC),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                  child: Text(
+                    'REPLAY TUTORIAL',
+                    style: GoogleFonts.pressStart2p(
+                      color: const Color(0xFF00FFCC),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
