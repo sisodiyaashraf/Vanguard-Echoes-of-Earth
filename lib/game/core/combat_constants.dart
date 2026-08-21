@@ -117,5 +117,33 @@ class CombatConstants {
         return 30.0;
     }
   }
+
+  // Boss Combat Constants
+  static const double bossTelegraphDuration = 0.7;
+  static const double bossAttackCooldown = 2.0;
+
+  // Dragon Boss
+  static const int bossDragonFireLineDamage = 20;
+  static const int bossDragonDashDamage = 25;
+  static const double bossDragonDashSpeed = 250.0;
+
+  // T-Rex Boss
+  static const int bossTRexSlamDamage = 30;
+  static const int bossTRexRockDamage = 20;
+  static const double bossTRexRockSpeed = 300.0;
+
+  // Curator Boss
+  static const int bossCuratorDecayDamage = 20;
+  static const double bossCuratorPhaseDuration = 2.0;
+
+  // Shark Boss
+  static const int bossSharkSpreadDamage = 15;
+  static const double bossSharkBladeSpeed = 350.0;
+  static const int bossSharkLungeDamage = 25;
+  static const double bossSharkLungeSpeed = 300.0;
+
+  // Kitsune Boss
+  static const int bossKitsuneStrikeDamage = 20;
+  static const double bossKitsuneDecoyDuration = 3.0;
 }
 

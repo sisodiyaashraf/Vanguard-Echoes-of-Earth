@@ -43,4 +43,20 @@ class SaveManager {
   static double getSfxVolume() {
     return _prefs?.getDouble('sfx_volume') ?? 0.7;
   }
+
+  static Future<void> setHasSeenTutorial(bool value) async {
+    await _prefs?.setBool('has_seen_tutorial', value);
+  }
+
+  static bool hasSeenTutorial() {
+    return _prefs?.getBool('has_seen_tutorial') ?? false;
+  }
+
+  static Future<void> setHasSeenTeamTutorial(bool value) async {
+    await _prefs?.setBool('has_seen_team_tutorial', value);
+  }
+
+  static bool hasSeenTeamTutorial() {
+    return _prefs?.getBool('has_seen_team_tutorial') ?? false;
+  }
 }
