@@ -128,6 +128,14 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
   void update(double dt) {
     super.update(dt);
 
+    // Optimize off-screen collision checking: disable hitbox if far from active hero
+    final distanceToHero = (game.activeHero.position.x - position.x).abs();
+    if (distanceToHero > 600) {
+      _bodyHitbox.collisionType = CollisionType.inactive;
+    } else if (health > 0) {
+      _bodyHitbox.collisionType = CollisionType.active;
+    }
+
     if (_contactDamageCooldownTimer > 0) {
       _contactDamageCooldownTimer -= dt;
     }
@@ -167,6 +175,11 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
       final groundTop = platform.position.y;
       final groundLeft = platform.position.x;
       final groundRight = platform.position.x + platform.size.x;
+
+      // Skip distant platforms for performance optimization
+      if (groundRight < position.x - 400 || groundLeft > position.x + 400) {
+        continue;
+      }
 
       if (position.x + halfWidth > groundLeft && position.x - halfWidth < groundRight) {
         if (velocity.y >= 0 &&
@@ -256,17 +269,20 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     }
 
     final rand = Random();
-    for (int i = 0; i < 8; i++) {
-      final angle = rand.nextDouble() * 2 * pi;
-      final speed = 50 + rand.nextDouble() * 100;
-      final vel = Vector2(cos(angle) * speed, sin(angle) * speed - 50);
-      game.world.add(ElementParticle(
-        position: position.clone(),
-        velocity: vel,
-        color: particleColor,
-        radius: 3.0 + rand.nextDouble() * 3.0,
-        duration: 0.3 + rand.nextDouble() * 0.3,
-      ));
+    final currentParticles = game.world.children.whereType<ElementParticle>().length;
+    if (currentParticles < 40) {
+      for (int i = 0; i < 8; i++) {
+        final angle = rand.nextDouble() * 2 * pi;
+        final speed = 50 + rand.nextDouble() * 100;
+        final vel = Vector2(cos(angle) * speed, sin(angle) * speed - 50);
+        game.world.add(ElementParticle(
+          position: position.clone(),
+          velocity: vel,
+          color: particleColor,
+          radius: 3.0 + rand.nextDouble() * 3.0,
+          duration: 0.3 + rand.nextDouble() * 0.3,
+        ));
+      }
     }
 
     // Play hit SFX

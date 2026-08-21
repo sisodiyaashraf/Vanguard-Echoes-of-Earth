@@ -27,6 +27,8 @@ import 'package:vanguard_echoes_of_earth/game/core/game_state.dart';
 import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 import 'package:vanguard_echoes_of_earth/game/components/hollow_boss.dart';
 import 'package:vanguard_echoes_of_earth/game/core/tutorial_controller.dart';
+import 'package:vanguard_echoes_of_earth/game/components/element_particle.dart';
+import 'package:vanguard_echoes_of_earth/game/components/dust_particle.dart';
 
 class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
   final LevelConfig initialLevelConfig;
@@ -107,6 +109,43 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
 
     // Initialize SharedPreferences SaveManager
     await SaveManager.init();
+
+    // Preload commonly-used assets to prevent runtime loading stutters
+    final imagesToPreload = [
+      'characters/Enemy sprites (The Hollow).png',
+      'characters/VFX (effects, transparent).png',
+      'characters/Hero 1 Dragon — Kinetic Scales.png',
+      'characters/Dragon - run.png',
+      'characters/Dragon - jump and attack.png',
+      'characters/dragon kinetic (superpower).png',
+      'characters/dragon kinetic (transformation).png',
+      'characters/Hero 2 T-Rex (Seismic Hammer).png',
+      'characters/T-Rex - run.png',
+      'characters/T-Rex - jump and attack.png',
+      'characters/t-rex seismic (superpower).png',
+      'characters/t-rex seismic (transformation).png',
+      'characters/Curator (Temporal Nanotech).png',
+      'characters/Curator - run.png',
+      'characters/Curator - jump and attack.png',
+      'characters/curator temporal (superpower).png',
+      'characters/curator temporal (transformation).png',
+      'characters/Shark (Hydrokinetic Agility).png',
+      'characters/Shark - run.png',
+      'characters/Shark - jump and attack.png',
+      'characters/shark hydrokinetic (superpower).png',
+      'characters/shark hydrokinetic (transformation).png',
+      'characters/Kitsune (Holographic).png',
+      'characters/Kitsune - run.png',
+      'characters/Kitsune - jump and attack.png',
+      'characters/kitsune holographic (superpower).png',
+      'characters/kitsune holographic (transformation).png',
+      'backgrounds/fire_sky.png',
+      'backgrounds/earth_underground.png',
+      'backgrounds/ancient_museum.png',
+      'backgrounds/water_ocean.png',
+      'backgrounds/urban_tech.png',
+    ];
+    await images.loadAll(imagesToPreload);
 
     // Create the initial platform in world space
     final initialPlatform = Platform(
@@ -536,7 +575,6 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
   void cycleHero() {
     // 1. Deactivate old active hero and reset its inputs/velocity to stop moving
     final oldHero = activeHero;
-    oldHero.isActive = false;
     oldHero.inputState.reset();
     oldHero.velocity.setZero();
     activeIndicator.removeFromParent();
@@ -545,8 +583,11 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
     activeHeroIndex = (activeHeroIndex + 1) % heroes.length;
 
     // 3. Activate new hero and attach indicator
+    for (int i = 0; i < heroes.length; i++) {
+      heroes[i].isActive = (i == activeHeroIndex);
+    }
+
     final newHero = activeHero;
-    newHero.isActive = true;
     activeIndicator.position = Vector2(0, -newHero.size.y / 2 - 10);
     newHero.add(activeIndicator);
 
@@ -623,7 +664,15 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
         c is PlasmaShockwave ||
         c is SeismicSlam ||
         c is TemporalWave ||
-        c is WaterBlade
+        c is WaterBlade ||
+        c is BossFireLineSegment ||
+        c is BossRockProjectile ||
+        c is BossSeismicShockwave ||
+        c is BossDecayPulse ||
+        c is BossWaterBlade ||
+        c is BossDecoy ||
+        c is ElementParticle ||
+        c is DustParticle
     );
     for (var proj in existingProjectiles.toList()) {
       proj.removeFromParent();

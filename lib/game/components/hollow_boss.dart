@@ -319,6 +319,11 @@ class HollowBoss extends HollowEnemy {
       final groundLeft = platform.position.x;
       final groundRight = platform.position.x + platform.size.x;
 
+      // Skip distant platforms for performance optimization
+      if (groundRight < position.x - 400 || groundLeft > position.x + 400) {
+        continue;
+      }
+
       if (position.x + halfWidth > groundLeft && position.x - halfWidth < groundRight) {
         if (velocity.y >= 0 &&
             position.y + halfHeight >= groundTop &&

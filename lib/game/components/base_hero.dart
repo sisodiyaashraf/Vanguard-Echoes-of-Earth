@@ -208,6 +208,11 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
       final groundLeft = platform.position.x;
       final groundRight = platform.position.x + platform.size.x;
 
+      // Skip distant platforms for performance optimization
+      if (groundRight < position.x - 600 || groundLeft > position.x + 600) {
+        continue;
+      }
+
       if (position.x + halfWidth > groundLeft && position.x - halfWidth < groundRight) {
         final visualFeetY = position.y + halfHeight - groundContactOffset;
         if (velocity.y >= 0 &&
@@ -265,13 +270,16 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
       _dustTimer += dt;
       if (_dustTimer >= 0.15) {
         _dustTimer = 0.0;
-        final spawnPos = position + Vector2(-scale.x.sign * 15.0, size.y / 2 - 5);
-        final randomX = (_random.nextDouble() - 0.5) * 15 - scale.x.sign * 35;
-        final randomY = -_random.nextDouble() * 15 - 5;
-        game.world.add(DustParticle(
-          position: spawnPos,
-          velocity: Vector2(randomX, randomY),
-        ));
+        final currentDust = game.world.children.whereType<DustParticle>().length;
+        if (currentDust < 20) {
+          final spawnPos = position + Vector2(-scale.x.sign * 15.0, size.y / 2 - 5);
+          final randomX = (_random.nextDouble() - 0.5) * 15 - scale.x.sign * 35;
+          final randomY = -_random.nextDouble() * 15 - 5;
+          game.world.add(DustParticle(
+            position: spawnPos,
+            velocity: Vector2(randomX, randomY),
+          ));
+        }
       }
     }
 
