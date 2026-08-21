@@ -37,6 +37,18 @@ class TeamLevels {
       heroId: 'team',
       backgroundAssetPath: 'backgrounds/ancient_museum.png',
       levelSize: Vector2(2000, 600),
+      platforms: [
+        PlatformData(position: Vector2(0, 450), size: Vector2(500, 150)),
+        PlatformData(position: Vector2(600, 320), size: Vector2(300, 40)),
+        PlatformData(position: Vector2(1000, 220), size: Vector2(400, 40)),
+        PlatformData(position: Vector2(1500, 450), size: Vector2(500, 150)),
+      ],
+      enemySpawnPoints: [
+        EnemySpawnData(position: Vector2(300, 386), variant: EnemyVariant.scout),
+        EnemySpawnData(position: Vector2(750, 256), variant: EnemyVariant.swarm),
+        EnemySpawnData(position: Vector2(1200, 156), variant: EnemyVariant.soldier),
+        EnemySpawnData(position: Vector2(1700, 386), variant: EnemyVariant.brute),
+      ],
     ),
     LevelConfig(
       id: 'team_3',
@@ -44,6 +56,20 @@ class TeamLevels {
       heroId: 'team',
       backgroundAssetPath: 'backgrounds/fire_sky.png',
       levelSize: Vector2(2000, 600),
+      platforms: [
+        PlatformData(position: Vector2(0, 450), size: Vector2(400, 150)),
+        PlatformData(position: Vector2(500, 320), size: Vector2(300, 40)),
+        PlatformData(position: Vector2(900, 320), size: Vector2(300, 40)),
+        PlatformData(position: Vector2(1300, 320), size: Vector2(300, 40)),
+        PlatformData(position: Vector2(1700, 450), size: Vector2(300, 150)),
+      ],
+      enemySpawnPoints: [
+        EnemySpawnData(position: Vector2(200, 386), variant: EnemyVariant.scout),
+        EnemySpawnData(position: Vector2(650, 256), variant: EnemyVariant.swarm),
+        EnemySpawnData(position: Vector2(1050, 256), variant: EnemyVariant.soldier),
+        EnemySpawnData(position: Vector2(1450, 256), variant: EnemyVariant.scout),
+        EnemySpawnData(position: Vector2(1850, 386), variant: EnemyVariant.brute),
+      ],
     ),
     LevelConfig(
       id: 'team_4',
@@ -51,6 +77,18 @@ class TeamLevels {
       heroId: 'team',
       backgroundAssetPath: 'backgrounds/earth_underground.png',
       levelSize: Vector2(2000, 600),
+      platforms: [
+        PlatformData(position: Vector2(0, 450), size: Vector2(500, 150)),
+        PlatformData(position: Vector2(600, 300), size: Vector2(300, 40)),
+        PlatformData(position: Vector2(1000, 180), size: Vector2(400, 40)),
+        PlatformData(position: Vector2(1500, 300), size: Vector2(500, 150)),
+      ],
+      enemySpawnPoints: [
+        EnemySpawnData(position: Vector2(250, 386), variant: EnemyVariant.scout),
+        EnemySpawnData(position: Vector2(750, 236), variant: EnemyVariant.soldier),
+        EnemySpawnData(position: Vector2(1200, 116), variant: EnemyVariant.swarm),
+        EnemySpawnData(position: Vector2(1750, 236), variant: EnemyVariant.brute),
+      ],
     ),
     LevelConfig(
       id: 'team_5',
@@ -58,6 +96,12 @@ class TeamLevels {
       heroId: 'team',
       backgroundAssetPath: 'backgrounds/water_ocean.png',
       levelSize: Vector2(2000, 600),
+      platforms: [
+        PlatformData(position: Vector2(0, 450), size: Vector2(2000, 150)),
+      ],
+      enemySpawnPoints: [
+        EnemySpawnData(position: Vector2(1200, 354), variant: EnemyVariant.boss),
+      ],
     ),
   ];
 }
