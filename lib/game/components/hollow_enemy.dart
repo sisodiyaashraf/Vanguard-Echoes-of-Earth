@@ -42,7 +42,7 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     required Vector2 position,
   }) : super(
           position: position,
-          size: Vector2.all(128),
+          size: variant == EnemyVariant.boss ? Vector2.all(192) : Vector2.all(128),
           anchor: Anchor.center,
         ) {
     maxHealth = CombatConstants.getEnemyMaxHealth(variant);
@@ -58,7 +58,7 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     await super.onLoad();
 
     final image = await game.images.load('characters/Enemy sprites (The Hollow).png');
-    final row = variant.index;
+    final row = variant == EnemyVariant.boss ? EnemyVariant.brute.index : variant.index;
 
     // Slice frames for the specified enemy type row (height offset is row * 250)
     final idleAnimation = SpriteAnimation.spriteList(
@@ -118,8 +118,8 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
 
     // Add centered physical hitbox for receiving damage
     _bodyHitbox = RectangleHitbox(
-      size: Vector2(60, 90),
-      position: Vector2(34, 19),
+      size: variant == EnemyVariant.boss ? Vector2(90, 135) : Vector2(60, 90),
+      position: variant == EnemyVariant.boss ? Vector2(51, 28) : Vector2(34, 19),
     );
     add(_bodyHitbox);
   }

@@ -1,6 +1,6 @@
 enum EnemyAnimState { idle, chase, attack, hurt, dead }
 
-enum EnemyVariant { brute, soldier, scout, swarm }
+enum EnemyVariant { brute, soldier, scout, swarm, boss }
 
 class CombatConstants {
   static const double meleeAttackDuration = 0.35;
@@ -45,6 +45,8 @@ class CombatConstants {
 
   static int getEnemyMaxHealth(EnemyVariant variant) {
     switch (variant) {
+      case EnemyVariant.boss:
+        return 400;
       case EnemyVariant.brute:
         return 90;
       case EnemyVariant.soldier:
@@ -58,6 +60,8 @@ class CombatConstants {
 
   static int getEnemyContactDamage(EnemyVariant variant) {
     switch (variant) {
+      case EnemyVariant.boss:
+        return 25;
       case EnemyVariant.brute:
         return 20;
       case EnemyVariant.soldier:
@@ -71,6 +75,8 @@ class CombatConstants {
 
   static double getEnemySpeed(EnemyVariant variant) {
     switch (variant) {
+      case EnemyVariant.boss:
+        return 50.0;
       case EnemyVariant.brute:
         return 40.0;
       case EnemyVariant.soldier:
@@ -84,6 +90,8 @@ class CombatConstants {
 
   static double getEnemyAggroRange(EnemyVariant variant) {
     switch (variant) {
+      case EnemyVariant.boss:
+        return 200.0;
       case EnemyVariant.brute:
         return 120.0;
       case EnemyVariant.soldier:
@@ -97,6 +105,8 @@ class CombatConstants {
 
   static double getEnemyAttackRange(EnemyVariant variant) {
     switch (variant) {
+      case EnemyVariant.boss:
+        return 55.0;
       case EnemyVariant.brute:
         return 45.0;
       case EnemyVariant.soldier:
