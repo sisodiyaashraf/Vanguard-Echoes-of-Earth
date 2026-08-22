@@ -4,6 +4,9 @@ import 'package:vanguard_echoes_of_earth/game/components/seismic_slam.dart';
 import 'package:vanguard_echoes_of_earth/game/components/base_hero.dart';
 
 class TRexHero extends BaseHero {
+  static const double runGroundOffset = 25.0;
+  static const double idleGroundOffset = 0.0;
+
   TRexHero({
     super.position,
   });
@@ -24,40 +27,40 @@ class TRexHero extends BaseHero {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    // Idle animation (4 frames, 375x500 cell size)
+    // Idle animation (4 frames, 375x557 cell size)
     final idleAnimation = await game.loadSpriteAnimation(
       'characters/Hero 2 T-Rex (Seismic Hammer).png',
       SpriteAnimationData.sequenced(
         amount: 4,
         stepTime: 0.15,
-        textureSize: Vector2(375, 500),
+        textureSize: Vector2(375, 557),
         amountPerRow: 4,
       ),
     );
 
-    // Run animation (6 frames, 250x250 cell size)
+    // Run animation (6 frames, 250x534 cell size)
     final runAnimation = await game.loadSpriteAnimation(
       'characters/T-Rex -run.png',
       SpriteAnimationData.sequenced(
         amount: 6,
         stepTime: 0.10,
-        textureSize: Vector2(250, 250),
+        textureSize: Vector2(250, 534),
         amountPerRow: 6,
       ),
     );
 
-    // Jump animation (2 frames, 500x500 cell size, starting at y=0)
+    // Jump animation (2 frames, 500x500 cell size, starting at y=0, with 3 columns per row)
     final jumpAnimation = await game.loadSpriteAnimation(
       'characters/T-Rex -run -jump and attack.png',
       SpriteAnimationData.sequenced(
         amount: 2,
         stepTime: 0.20,
         textureSize: Vector2(500, 500),
-        amountPerRow: 2,
+        amountPerRow: 3,
       ),
     );
 
-    // Attack animation (3 frames, 500x500 cell size, starting at y=500)
+    // Attack animation (3 frames, 500x500 cell size, starting at y=500, with 3 columns per row)
     final attackAnimation = await game.loadSpriteAnimation(
       'characters/T-Rex -run -jump and attack.png',
       SpriteAnimationData.sequenced(
@@ -97,7 +100,12 @@ class TRexHero extends BaseHero {
   }
 
   @override
-  double get groundContactOffset => 0.0;
+  double get groundContactOffset {
+    if (current == HeroState.run) {
+      return runGroundOffset;
+    }
+    return idleGroundOffset;
+  }
 
   @override
   void spawnPower() {

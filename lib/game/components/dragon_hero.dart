@@ -4,6 +4,9 @@ import 'package:vanguard_echoes_of_earth/game/components/plasma_shockwave.dart';
 import 'package:vanguard_echoes_of_earth/game/components/base_hero.dart';
 
 class DragonHero extends BaseHero {
+  static const double runGroundOffset = 0.0;
+  static const double idleGroundOffset = 0.0;
+
   DragonHero({
     super.position,
   });
@@ -88,7 +91,12 @@ class DragonHero extends BaseHero {
   }
 
   @override
-  double get groundContactOffset => 2.0;
+  double get groundContactOffset {
+    if (current == HeroState.run) {
+      return runGroundOffset;
+    }
+    return idleGroundOffset;
+  }
 
   @override
   void spawnPower() {

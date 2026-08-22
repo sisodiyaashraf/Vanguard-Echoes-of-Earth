@@ -4,6 +4,9 @@ import 'package:vanguard_echoes_of_earth/game/components/holo_clone_ambush.dart'
 import 'package:vanguard_echoes_of_earth/game/components/base_hero.dart';
 
 class KitsuneHero extends BaseHero {
+  static const double runGroundOffset = 9.2;
+  static const double idleGroundOffset = 0.0;
+
   KitsuneHero({super.position});
 
   @override
@@ -22,40 +25,40 @@ class KitsuneHero extends BaseHero {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    // Idle animation (4 frames, 375x500 cell size)
+    // Idle animation (4 frames, 375x750 cell size)
     final idleAnimation = await game.loadSpriteAnimation(
       'characters/Kitsune (Holographic).png',
       SpriteAnimationData.sequenced(
         amount: 4,
         stepTime: 0.15,
-        textureSize: Vector2(375, 500),
+        textureSize: Vector2(375, 750),
         amountPerRow: 4,
       ),
     );
 
-    // Run animation (6 frames, 250x250 cell size)
+    // Run animation (6 frames, 250x534 cell size)
     final runAnimation = await game.loadSpriteAnimation(
       'characters/Kitsune - run.png',
       SpriteAnimationData.sequenced(
         amount: 6,
         stepTime: 0.10,
-        textureSize: Vector2(250, 250),
+        textureSize: Vector2(250, 534),
         amountPerRow: 6,
       ),
     );
 
-    // Jump animation (2 frames, 500x500 cell size, starting at y=0)
+    // Jump animation (2 frames, 500x500 cell size, starting at y=0, with 3 columns per row)
     final jumpAnimation = await game.loadSpriteAnimation(
       'characters/Kitsune - jump and attack.png',
       SpriteAnimationData.sequenced(
         amount: 2,
         stepTime: 0.20,
         textureSize: Vector2(500, 500),
-        amountPerRow: 2,
+        amountPerRow: 3,
       ),
     );
 
-    // Attack animation (3 frames, 500x500 cell size, starting at y=500)
+    // Attack animation (3 frames, 500x500 cell size, starting at y=500, with 3 columns per row)
     final attackAnimation = await game.loadSpriteAnimation(
       'characters/Kitsune - jump and attack.png',
       SpriteAnimationData.sequenced(
@@ -75,10 +78,10 @@ class KitsuneHero extends BaseHero {
       0.15,
     );
 
-    // Load Transformation animation (4 frames)
+    // Load Transformation animation (3 frames)
     final transformationAnimation = await loadHorizontalAnimation(
       'characters/kitsune holographic (transformation).png',
-      4,
+      3,
       0.15,
     );
 
@@ -95,7 +98,12 @@ class KitsuneHero extends BaseHero {
   }
 
   @override
-  double get groundContactOffset => 3.0;
+  double get groundContactOffset {
+    if (current == HeroState.run) {
+      return runGroundOffset;
+    }
+    return idleGroundOffset;
+  }
 
   @override
   void spawnPower() {
