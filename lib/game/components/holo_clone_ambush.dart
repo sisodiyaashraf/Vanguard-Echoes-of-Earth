@@ -14,6 +14,7 @@ class HoloClone extends SpriteAnimationComponent with HasGameReference<VanguardG
           position: spawnPosition,
           size: Vector2.all(128),
           anchor: Anchor.center,
+          priority: 4,
         ) {
     scale.x = scaleX;
   }
@@ -22,13 +23,13 @@ class HoloClone extends SpriteAnimationComponent with HasGameReference<VanguardG
   Future<void> onLoad() async {
     await super.onLoad();
 
-    // Load Kitsune's idle animation (4 frames, 375x500 cell size)
+    // Load Kitsune's idle animation (4 frames, 375x750 cell size)
     animation = await game.loadSpriteAnimation(
       'characters/Kitsune (Holographic).png',
       SpriteAnimationData.sequenced(
         amount: 4,
         stepTime: 0.15,
-        textureSize: Vector2(375, 500),
+        textureSize: Vector2(375, 750),
         amountPerRow: 4,
       ),
     );

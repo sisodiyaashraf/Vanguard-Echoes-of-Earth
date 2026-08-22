@@ -13,6 +13,7 @@ class MeleeStrike extends PositionComponent with HasGameReference<VanguardGame> 
           position: position,
           size: size,
           anchor: Anchor.center,
+          priority: 4,
         );
 
   @override

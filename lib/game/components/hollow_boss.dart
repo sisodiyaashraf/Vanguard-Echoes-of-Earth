@@ -37,6 +37,7 @@ class HollowBoss extends HollowEnemy {
   @override
   void update(double dt) {
     if (health <= 0) {
+      paint.colorFilter = null; // Ensure boss color filters are also cleared on death
       super.update(dt);
       return;
     }
@@ -376,6 +377,7 @@ class BossFireLineSegment extends PositionComponent
   }) : super(
           size: Vector2(30, 40),
           anchor: Anchor.bottomCenter,
+          priority: 4,
         );
 
   @override
@@ -426,6 +428,7 @@ class BossRockProjectile extends PositionComponent
   }) : super(
           size: Vector2.all(24),
           anchor: Anchor.center,
+          priority: 4,
         );
 
   @override
@@ -479,6 +482,7 @@ class BossSeismicShockwave extends PositionComponent
   }) : super(
           size: Vector2(24, 20),
           anchor: Anchor.bottomCenter,
+          priority: 4,
         );
 
   @override
@@ -529,6 +533,7 @@ class BossDecayPulse extends PositionComponent
   }) : super(
           size: Vector2.all(280),
           anchor: Anchor.center,
+          priority: 4,
         );
 
   @override
@@ -581,6 +586,7 @@ class BossWaterBlade extends PositionComponent
   }) : super(
           size: Vector2(25, 12),
           anchor: Anchor.center,
+          priority: 4,
         );
 
   @override
@@ -637,6 +643,7 @@ class BossDecoy extends PositionComponent with HasGameReference<VanguardGame> {
   }) : super(
           size: Vector2.all(192),
           anchor: Anchor.center,
+          priority: 4,
         );
 
   @override

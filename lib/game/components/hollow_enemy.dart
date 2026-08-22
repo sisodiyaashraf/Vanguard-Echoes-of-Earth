@@ -44,6 +44,7 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
           position: position,
           size: variant == EnemyVariant.boss ? Vector2.all(192) : Vector2.all(128),
           anchor: Anchor.center,
+          priority: 2,
         ) {
     maxHealth = CombatConstants.getEnemyMaxHealth(variant);
     health = maxHealth;
@@ -141,6 +142,7 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     }
 
     if (health <= 0) {
+      paint.colorFilter = null; // Clear hurt flash color filters upon death
       current = EnemyAnimState.dead;
       _deathTimer += dt;
       paint.color = paint.color.withValues(alpha: (1.0 - (_deathTimer / 0.5)).clamp(0.0, 1.0));
@@ -296,6 +298,7 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
       current = EnemyAnimState.dead;
       _bodyHitbox.collisionType = CollisionType.inactive;
       _deathTimer = 0.0;
+      paint.colorFilter = null; // Clear color filters immediately
       FlameAudio.play('enemy_death.wav', volume: SaveManager.getSfxVolume());
     }
   }
