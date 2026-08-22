@@ -33,6 +33,7 @@ import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
 import 'package:vanguard_echoes_of_earth/game/progression/achievement.dart';
 import 'package:vanguard_echoes_of_earth/game/progression/daily_challenge.dart';
 import 'package:vanguard_echoes_of_earth/game/progression/notification_toast.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
   final LevelConfig initialLevelConfig;
@@ -885,11 +886,11 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
 
     // 4. Track boss kills achievement
     if (variant == EnemyVariant.boss) {
-      final killedBosses = SaveManager._prefs?.getStringList('killed_bosses') ?? [];
+      final killedBosses = SaveManager.getKilledBosses();
       final bossId = currentLevelConfig?.id ?? 'generic_boss';
       if (!killedBosses.contains(bossId)) {
         killedBosses.add(bossId);
-        SaveManager._prefs?.setStringList('killed_bosses', killedBosses);
+        SaveManager.saveKilledBosses(killedBosses);
       }
       if (killedBosses.length >= 5) {
         unlockAchievement('all_bosses');
@@ -934,7 +935,7 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
   void awardDailyChallengeReward() {
     final lastPlayed = SaveManager.getLastPlayedHeroId();
     final prog = SaveManager.getHeroProgress(lastPlayed);
-    final leveledUp = prog.addXp(CombatConstants.dailyChallengeXpAward);
+    prog.addXp(CombatConstants.dailyChallengeXpAward);
     SaveManager.saveHeroProgress(prog);
 
     unlockAchievement('daily_completed');

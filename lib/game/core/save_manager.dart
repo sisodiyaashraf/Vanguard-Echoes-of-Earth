@@ -157,6 +157,14 @@ class SaveManager {
     await _prefs?.setBool('daily_challenge_completed', value);
   }
 
+  static List<String> getKilledBosses() {
+    return _prefs?.getStringList('killed_bosses') ?? [];
+  }
+
+  static Future<void> saveKilledBosses(List<String> list) async {
+    await _prefs?.setStringList('killed_bosses', list);
+  }
+
   static String getLastPlayedHeroId() {
     return _prefs?.getString('last_played_hero_id') ?? 'dragon';
   }

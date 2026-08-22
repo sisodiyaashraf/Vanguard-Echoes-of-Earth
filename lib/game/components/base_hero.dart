@@ -12,7 +12,6 @@ import 'package:vanguard_echoes_of_earth/game/components/dust_particle.dart';
 import 'package:vanguard_echoes_of_earth/game/components/melee_strike.dart';
 import 'package:vanguard_echoes_of_earth/game/components/platform.dart';
 import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
-import 'package:vanguard_echoes_of_earth/game/progression/hero_progress.dart';
 
 enum HeroState { idle, run, jump, attack, superpower, transformation }
 
@@ -578,7 +577,18 @@ class LevelUpText extends TextComponent with HasGameReference<VanguardGame> {
     if (_elapsed >= 1.5) {
       removeFromParent();
     } else {
-      opacity = (1.0 - (_elapsed / 1.5)).clamp(0.0, 1.0);
+      final double progress = (_elapsed / 1.5).clamp(0.0, 1.0);
+      final alpha = (255 * (1.0 - progress)).toInt();
+      textRenderer = TextPaint(
+        style: TextStyle(
+          color: const Color(0xFF00FFCC).withAlpha(alpha),
+          fontSize: 16.0,
+          fontWeight: FontWeight.bold,
+          shadows: [
+            Shadow(color: Colors.black.withAlpha(alpha), blurRadius: 4.0, offset: const Offset(2.0, 2.0)),
+          ],
+        ),
+      );
     }
   }
 }
