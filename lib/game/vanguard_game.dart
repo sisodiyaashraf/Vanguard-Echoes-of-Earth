@@ -29,6 +29,7 @@ import 'package:vanguard_echoes_of_earth/game/components/hollow_boss.dart';
 import 'package:vanguard_echoes_of_earth/game/core/tutorial_controller.dart';
 import 'package:vanguard_echoes_of_earth/game/components/element_particle.dart';
 import 'package:vanguard_echoes_of_earth/game/components/dust_particle.dart';
+import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
 
 class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
   final LevelConfig initialLevelConfig;

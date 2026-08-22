@@ -32,6 +32,8 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
   double _deathTimer = 0.0;
   double _contactDamageCooldownTimer = 0.0;
 
+  bool get isHurt => _hurtTimer > 0;
+
   late final RectangleHitbox _bodyHitbox;
 
   // Track which specific attack instances have already hit this enemy

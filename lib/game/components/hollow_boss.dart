@@ -19,6 +19,7 @@ class HollowBoss extends HollowEnemy {
   double _telegraphTimer = 0.0;
   double _attackCooldownTimer = 0.0;
   double _specialStateTimer = 0.0;
+  double _timeSinceCreation = 0.0;
 
   bool isTelegraphing = false;
   bool isAttackingPattern = false;
@@ -36,13 +37,14 @@ class HollowBoss extends HollowEnemy {
 
   @override
   void update(double dt) {
+    _timeSinceCreation += dt;
     if (health <= 0) {
       paint.colorFilter = null; // Ensure boss color filters are also cleared on death
       super.update(dt);
       return;
     }
 
-    if (_hurtTimer > 0) {
+    if (isHurt) {
       super.update(dt);
       return;
     }
@@ -90,7 +92,7 @@ class HollowBoss extends HollowEnemy {
       if (_specialStateTimer <= 0) {
         isInvulnerable = false;
       }
-      final wave = 0.3 + 0.4 * sin(game.timeSinceCreation * 12);
+      final wave = 0.3 + 0.4 * sin(_timeSinceCreation * 12);
       paint.color = Colors.white.withValues(alpha: wave);
     } else {
       paint.color = Colors.white;
@@ -630,7 +632,7 @@ class BossWaterBlade extends PositionComponent
   }
 }
 
-class BossDecoy extends PositionComponent with HasGameReference<VanguardGame> {
+class BossDecoy extends PositionComponent with HasGameReference<VanguardGame>, HasPaint {
   final String bossType;
   double _lifetime = CombatConstants.bossKitsuneDecoyDuration;
   final Random _rand = Random();

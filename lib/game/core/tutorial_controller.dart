@@ -3,7 +3,6 @@ import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 import 'package:vanguard_echoes_of_earth/game/components/hollow_enemy.dart';
 import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
-import 'package:vanguard_echoes_of_earth/game/story/story_entry.dart';
 
 enum TutorialStep {
   none,
@@ -35,7 +34,7 @@ class TutorialController {
         active = true;
         currentStep = TutorialStep.move;
         game.overlays.add('tutorial');
-        game.isInputGated = false;
+        game.currentDialogueNotifier.value = null;
       }
     }
   }
@@ -75,7 +74,7 @@ class TutorialController {
         break;
 
       case TutorialStep.attack:
-        if (trainingDummy == null || trainingDummy!.shouldRemove || trainingDummy!.health <= 0) {
+        if (trainingDummy == null || trainingDummy!.parent == null || trainingDummy!.health <= 0) {
           currentStep = TutorialStep.power;
           hero.stats.regenEnergy(50);
           game.overlays.remove('tutorial');
