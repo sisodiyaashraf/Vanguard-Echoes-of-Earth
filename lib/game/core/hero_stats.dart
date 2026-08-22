@@ -1,8 +1,8 @@
 class HeroStats {
   int _currentHealth;
-  final int _maxHealth;
+  int _maxHealth;
   int _currentEnergy;
-  final int _maxEnergy;
+  int _maxEnergy;
 
   HeroStats({
     int maxHealth = 100,
@@ -16,6 +16,13 @@ class HeroStats {
   int get maxHealth => _maxHealth;
   int get currentEnergy => _currentEnergy;
   int get maxEnergy => _maxEnergy;
+
+  void upgradeStats(int healthBonus, int energyBonus) {
+    _maxHealth += healthBonus;
+    _maxEnergy += energyBonus;
+    _currentHealth = (_currentHealth + healthBonus).clamp(0, _maxHealth);
+    _currentEnergy = (_currentEnergy + energyBonus).clamp(0, _maxEnergy);
+  }
 
   void reset() {
     _currentHealth = _maxHealth;

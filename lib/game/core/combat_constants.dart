@@ -5,6 +5,11 @@ enum EnemyVariant { brute, soldier, scout, swarm, boss }
 class CombatConstants {
   static const double meleeAttackDuration = 0.35;
 
+  // XP progression constants
+  static const int enemyXpAward = 15;
+  static const int levelCompleteXpAward = 150;
+  static const int dailyChallengeXpAward = 250;
+
   // Dragon - Plasma Shockwave
   static const double plasmaCooldown = 1.0;
   static const int plasmaEnergyCost = 25;
