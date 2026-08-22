@@ -14,6 +14,7 @@ class PlasmaShockwave extends PositionComponent {
           position: spawnPosition,
           size: Vector2(32, 40),
           anchor: Anchor.center,
+          priority: 4,
         );
 
   @override

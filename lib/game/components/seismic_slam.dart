@@ -13,6 +13,7 @@ class SeismicSlam extends SpriteComponent with HasGameReference<VanguardGame> {
   }) : super(
           position: spawnPosition,
           anchor: Anchor.bottomCenter,
+          priority: 4,
         );
 
   @override

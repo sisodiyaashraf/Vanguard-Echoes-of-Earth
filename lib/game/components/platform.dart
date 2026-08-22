@@ -17,7 +17,7 @@ class Platform extends PositionComponent with HasGameReference<VanguardGame>, Co
     super.position,
     super.size,
     this.isBreakable = false,
-  });
+  }) : super(priority: 1);
 
   @override
   Future<void> onLoad() async {

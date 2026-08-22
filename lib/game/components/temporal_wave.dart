@@ -14,6 +14,7 @@ class TemporalWave extends SpriteComponent with HasGameReference<VanguardGame> {
           position: spawnPosition,
           size: Vector2(96, 96), // Wider than the standard plasma shockwave
           anchor: Anchor.center,
+          priority: 4,
         );
 
   @override

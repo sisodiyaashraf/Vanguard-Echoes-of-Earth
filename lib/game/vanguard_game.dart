@@ -737,12 +737,22 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
 
     // Spread all spawned heroes out on the ground
     for (int i = 0; i < heroes.length; i++) {
-      heroes[i].position = Vector2(100.0 + (i * 100.0), startY - heroes[i].size.y / 2);
+      heroes[i].position = Vector2(
+        100.0 + (i * 100.0),
+        startY - heroes[i].size.y / 2 + heroes[i].groundContactOffset,
+      );
       heroes[i].velocity.setZero();
+
+      final computedFeetY = heroes[i].position.y + (heroes[i].size.y / 2) - heroes[i].groundContactOffset;
+      // ignore: avoid_print
+      print('SPAWN ALIGNMENT CHECK: Hero ${heroes[i].heroName} - position.y: ${heroes[i].position.y}, computedFeetY: $computedFeetY, platformTopY: $startY, offset: ${heroes[i].groundContactOffset}, diff: ${computedFeetY - startY}');
     }
 
     // Reset active hero position to start of level
-    activeHero.position = Vector2(100, startY - activeHero.size.y / 2);
+    activeHero.position = Vector2(
+      100,
+      startY - activeHero.size.y / 2 + activeHero.groundContactOffset,
+    );
     activeHero.velocity.setZero();
 
     // Reset stats for retry robustness

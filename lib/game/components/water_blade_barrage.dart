@@ -14,6 +14,7 @@ class WaterBlade extends SpriteComponent with HasGameReference<VanguardGame> {
           position: spawnPosition,
           size: Vector2(48, 48), // Small agile projectile
           anchor: Anchor.center,
+          priority: 4,
         );
 
   @override
