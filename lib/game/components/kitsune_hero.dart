@@ -16,7 +16,7 @@ class KitsuneHero extends BaseHero {
   double get meleeAttackDuration => CombatConstants.meleeAttackDuration;
 
   @override
-  double get powerCooldown => CombatConstants.holoCloneCooldown;
+  double get basePowerCooldown => CombatConstants.holoCloneCooldown;
 
   @override
   int get powerEnergyCost => CombatConstants.holoCloneEnergyCost;
@@ -108,6 +108,12 @@ class KitsuneHero extends BaseHero {
   @override
   void spawnPower() {
     // Trigger Holo Clone decoy ambush
-    spawnHoloCloneAmbush(game, position, scale.x);
+    final hasIllusion = hasSkillUnlocked('kitsune_clone_duration');
+    spawnHoloCloneAmbush(
+      game,
+      position,
+      scale.x,
+      durationMultiplier: hasIllusion ? 1.3 : 1.0,
+    );
   }
 }

@@ -18,7 +18,7 @@ class DragonHero extends BaseHero {
   double get meleeAttackDuration => CombatConstants.meleeAttackDuration;
 
   @override
-  double get powerCooldown => CombatConstants.plasmaCooldown;
+  double get basePowerCooldown => CombatConstants.plasmaCooldown;
 
   @override
   int get powerEnergyCost => CombatConstants.plasmaEnergyCost;
@@ -105,9 +105,12 @@ class DragonHero extends BaseHero {
     final spawnOffset = Vector2(direction * 80.0, 0.0);
     final spawnPos = position + spawnOffset;
 
+    final hasReach = hasSkillUnlocked('dragon_flame_reach');
     final shockwave = PlasmaShockwave(
       direction: direction,
       spawnPosition: spawnPos,
+      sizeMultiplier: hasReach ? 1.3 : 1.0,
+      lifetimeMultiplier: hasReach ? 1.3 : 1.0,
     );
 
     game.world.add(shockwave);

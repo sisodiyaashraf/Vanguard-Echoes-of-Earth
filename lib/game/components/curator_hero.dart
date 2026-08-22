@@ -18,7 +18,7 @@ class CuratorHero extends BaseHero {
   double get meleeAttackDuration => CombatConstants.meleeAttackDuration;
 
   @override
-  double get powerCooldown => CombatConstants.temporalCooldown;
+  double get basePowerCooldown => CombatConstants.temporalCooldown;
 
   @override
   int get powerEnergyCost => CombatConstants.temporalEnergyCost;
@@ -113,9 +113,12 @@ class CuratorHero extends BaseHero {
     final spawnOffset = Vector2(direction * 80.0, 0.0);
     final spawnPos = position + spawnOffset;
 
+    final hasHeavy = hasSkillUnlocked('curator_heavy_wave');
     final wave = TemporalWave(
       direction: direction,
       spawnPosition: spawnPos,
+      damage: hasHeavy ? (CombatConstants.temporalDamage * 1.2).toInt() : CombatConstants.temporalDamage,
+      speedMultiplier: hasHeavy ? 1.2 : 1.0,
     );
 
     game.world.add(wave);

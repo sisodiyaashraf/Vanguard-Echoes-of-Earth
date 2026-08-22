@@ -12,6 +12,7 @@ import 'package:vanguard_echoes_of_earth/game/components/dust_particle.dart';
 import 'package:vanguard_echoes_of_earth/game/components/melee_strike.dart';
 import 'package:vanguard_echoes_of_earth/game/components/platform.dart';
 import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
+import 'package:vanguard_echoes_of_earth/game/progression/hero_progress.dart';
 
 enum HeroState { idle, run, jump, attack, superpower, transformation }
 
@@ -57,10 +58,22 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
   // Abstract getters/methods for subclasses
   String get heroName;
   double get meleeAttackDuration;
-  double get powerCooldown;
+  double get basePowerCooldown;
   int get powerEnergyCost;
   double get groundContactOffset;
   void spawnPower();
+
+  double get powerCooldown {
+    double cd = basePowerCooldown;
+    final cleanName = heroName.toLowerCase();
+    if (hasSkillUnlocked('${cleanName}_faster_cooldown') ||
+        hasSkillUnlocked('${cleanName}_temporal_flow') ||
+        hasSkillUnlocked('${cleanName}_rapid_agility') ||
+        hasSkillUnlocked('${cleanName}_trickster_cd')) {
+      cd *= 0.85;
+    }
+    return cd;
+  }
 
   BaseHero({
     super.position,
@@ -72,6 +85,8 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     await super.onLoad();
     size = Vector2.all(128);
     anchor = Anchor.center;
+
+    applyProgressStats();
 
     // Add central hitbox for receiving enemy contact damage
     add(RectangleHitbox(
@@ -485,6 +500,83 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
       _transformationTimeRemaining = 0.60;
       current = HeroState.transformation;
       animationTicker?.reset();
+    }
+  }
+
+  void applyProgressStats() {
+    final heroProgress = SaveManager.getHeroProgress(heroName);
+    
+    // Apply level upgrades (starts at level 1, so level - 1 upgrades)
+    final levelBonus = (heroProgress.level - 1) * 5;
+    
+    // Apply skill buffs
+    int skillHealthBonus = 0;
+    int skillEnergyBonus = 0;
+    
+    final cleanName = heroName.toLowerCase();
+    if (hasSkillUnlocked('${cleanName}_thicker_scales') ||
+        hasSkillUnlocked('${cleanName}_unbreakable_guard') ||
+        hasSkillUnlocked('${cleanName}_nanotech_shield') ||
+        hasSkillUnlocked('${cleanName}_neon_evasion')) {
+      skillHealthBonus = 10;
+      if (cleanName == 't-rex' || cleanName == 'kitsune') {
+        skillHealthBonus = 15;
+      }
+    }
+    if (hasSkillUnlocked('${cleanName}_rage_energy') ||
+        hasSkillUnlocked('${cleanName}_deep_lung')) {
+      skillEnergyBonus = 20;
+    }
+    
+    stats.upgradeStats(levelBonus + skillHealthBonus, levelBonus + skillEnergyBonus);
+    stats.reset();
+  }
+
+  bool hasSkillUnlocked(String skillId) {
+    final prog = SaveManager.getHeroProgress(heroName);
+    return prog.unlockedSkillIds.contains(skillId);
+  }
+
+  void onLevelUp() {
+    stats.upgradeStats(5, 5);
+    stats.reset();
+    
+    game.world.add(
+      LevelUpText(position: position.clone() - Vector2(0, size.y / 2)),
+    );
+    
+    FlameAudio.play('win.wav', volume: SaveManager.getSfxVolume() * 0.7);
+  }
+}
+
+class LevelUpText extends TextComponent with HasGameReference<VanguardGame> {
+  double _elapsed = 0.0;
+  
+  LevelUpText({required super.position}) : super(
+    text: 'LEVEL UP!',
+    textRenderer: TextPaint(
+      style: const TextStyle(
+        color: Color(0xFF00FFCC),
+        fontSize: 16.0,
+        fontWeight: FontWeight.bold,
+        shadows: [
+          Shadow(color: Colors.black, blurRadius: 4.0, offset: Offset(2.0, 2.0)),
+        ],
+      ),
+    ),
+    anchor: Anchor.center,
+    priority: 5,
+  );
+  
+  @override
+  void update(double dt) {
+    super.update(dt);
+    position.y -= 40 * dt;
+    _elapsed += dt;
+    if (_elapsed >= 1.5) {
+      removeFromParent();
+    } else {
+      opacity = (1.0 - (_elapsed / 1.5)).clamp(0.0, 1.0);
     }
   }
 }

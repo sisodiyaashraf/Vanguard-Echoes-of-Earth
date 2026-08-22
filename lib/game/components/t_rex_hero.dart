@@ -18,7 +18,7 @@ class TRexHero extends BaseHero {
   double get meleeAttackDuration => CombatConstants.meleeAttackDuration;
 
   @override
-  double get powerCooldown => CombatConstants.seismicCooldown;
+  double get basePowerCooldown => CombatConstants.seismicCooldown;
 
   @override
   int get powerEnergyCost => CombatConstants.seismicEnergyCost;
@@ -111,7 +111,11 @@ class TRexHero extends BaseHero {
   void spawnPower() {
     // Spawn Seismic Slam ground effect at feet
     final feetPosition = position.clone() + Vector2(0, size.y / 2);
-    final slam = SeismicSlam(spawnPosition: feetPosition);
+    final hasResonance = hasSkillUnlocked('trex_seismic_size');
+    final slam = SeismicSlam(
+      spawnPosition: feetPosition,
+      sizeMultiplier: hasResonance ? 1.3 : 1.0,
+    );
     game.world.add(slam);
   }
 }

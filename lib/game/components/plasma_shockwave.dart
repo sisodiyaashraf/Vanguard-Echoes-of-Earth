@@ -6,13 +6,19 @@ import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
 class PlasmaShockwave extends PositionComponent {
   final double direction; // +1.0 for right, -1.0 for left
   double lifeTime = 0.0;
+  final int damage;
+  final double sizeMultiplier;
+  final double lifetimeMultiplier;
 
   PlasmaShockwave({
     required this.direction,
     required Vector2 spawnPosition,
+    this.damage = CombatConstants.plasmaDamage,
+    this.sizeMultiplier = 1.0,
+    this.lifetimeMultiplier = 1.0,
   }) : super(
           position: spawnPosition,
-          size: Vector2(32, 40),
+          size: Vector2(32 * sizeMultiplier, 40 * sizeMultiplier),
           anchor: Anchor.center,
           priority: 4,
         );
@@ -37,7 +43,7 @@ class PlasmaShockwave extends PositionComponent {
 
     // Increment lifetime and remove from parent when expired
     lifeTime += dt;
-    if (lifeTime >= CombatConstants.plasmaLifetime) {
+    if (lifeTime >= CombatConstants.plasmaLifetime * lifetimeMultiplier) {
       removeFromParent();
     }
   }

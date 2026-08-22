@@ -18,7 +18,7 @@ class SharkHero extends BaseHero {
   double get meleeAttackDuration => CombatConstants.meleeAttackDuration;
 
   @override
-  double get powerCooldown => CombatConstants.waterBladeCooldown;
+  double get basePowerCooldown => CombatConstants.waterBladeCooldown;
 
   @override
   int get powerEnergyCost => CombatConstants.waterBladeEnergyCost;
@@ -113,7 +113,12 @@ class SharkHero extends BaseHero {
     final spawnOffset = Vector2(direction * 50.0, 0.0);
     final spawnPos = position + spawnOffset;
 
-    // Trigger the spread projectile barrage
-    spawnWaterBladeBarrage(game, spawnPos, direction);
+    final hasRiptide = hasSkillUnlocked('shark_water_blades');
+    spawnWaterBladeBarrage(
+      game,
+      spawnPos,
+      direction,
+      damage: hasRiptide ? (CombatConstants.waterBladeDamage * 1.25).toInt() : CombatConstants.waterBladeDamage,
+    );
   }
 }
