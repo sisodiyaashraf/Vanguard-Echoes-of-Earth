@@ -6,6 +6,8 @@ import 'package:vanguard_echoes_of_earth/game/settings_screen.dart';
 import 'package:vanguard_echoes_of_earth/game/hero_select_screen.dart';
 import 'package:vanguard_echoes_of_earth/game/level_select_screen.dart';
 import 'package:vanguard_echoes_of_earth/game/game_screen.dart';
+import 'package:vanguard_echoes_of_earth/game/progression/skill_tree_screen.dart';
+import 'package:vanguard_echoes_of_earth/game/progression/achievements_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +35,8 @@ class MainApp extends StatelessWidget {
         '/hero-select': (context) => const HeroSelectScreen(),
         '/level-select': (context) => const LevelSelectScreen(),
         '/game': (context) => const GameScreen(),
+        '/skills': (context) => const SkillTreeScreen(),
+        '/achievements': (context) => const AchievementsScreen(),
       },
     );
   }

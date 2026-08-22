@@ -395,6 +395,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
 
   void takeDamage(int amount) {
     stats.takeDamage(amount);
+    game.hasTakenDamageThisLevel = true;
     _hitFlashTimer = 0.15;
     FlameAudio.play('hero_hurt.wav', volume: SaveManager.getSfxVolume());
 
@@ -469,6 +470,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
     // Check and spend energy
     if (!stats.spendEnergy(powerEnergyCost)) return;
 
+    game.hasUsedPowerThisLevel = true;
     spawnPower();
     FlameAudio.play('power.wav', volume: SaveManager.getSfxVolume());
 

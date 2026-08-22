@@ -30,12 +30,19 @@ import 'package:vanguard_echoes_of_earth/game/core/tutorial_controller.dart';
 import 'package:vanguard_echoes_of_earth/game/components/element_particle.dart';
 import 'package:vanguard_echoes_of_earth/game/components/dust_particle.dart';
 import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
+import 'package:vanguard_echoes_of_earth/game/progression/achievement.dart';
+import 'package:vanguard_echoes_of_earth/game/progression/daily_challenge.dart';
+import 'package:vanguard_echoes_of_earth/game/progression/notification_toast.dart';
 
 class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
   final LevelConfig initialLevelConfig;
   JoystickComponent? joystick;
   GameState gameState = GameState.playing;
   bool hasPlayedTransformation = false;
+
+  // Progression Tracking Flags
+  bool hasUsedPowerThisLevel = false;
+  bool hasTakenDamageThisLevel = false;
 
   // Hero Switching State
   late List<BaseHero> heroes;
@@ -493,6 +500,42 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
       SaveManager.saveCompletedLevel(currentLevelConfig!.id);
     }
 
+    // Award Level Complete XP
+    awardXp(CombatConstants.levelCompleteXpAward);
+
+    // Check first level completed achievement
+    unlockAchievement('first_level');
+
+    // Check Dragon all levels completed achievement
+    if (currentLevelConfig != null && currentLevelConfig!.id.startsWith('dragon_')) {
+      bool allDragonCleared = true;
+      for (int i = 1; i <= 5; i++) {
+        if (!SaveManager.isLevelCompleted('dragon_$i') && currentLevelConfig!.id != 'dragon_$i') {
+          allDragonCleared = false;
+        }
+      }
+      if (allDragonCleared) {
+        unlockAchievement('dragon_clear');
+      }
+    }
+
+    // Check untouchable squad achievement
+    if (currentLevelConfig?.heroId == 'team' && !hasTakenDamageThisLevel) {
+      unlockAchievement('no_damage_team');
+    }
+
+    // Check daily challenge complete progress
+    final challengeId = SaveManager.getCurrentChallengeId();
+    if (challengeId == 'complete_2_levels') {
+      final challenge = DailyChallenge.getChallengeById(challengeId);
+      final progress = SaveManager.getDailyChallengeProgress() + 1;
+      SaveManager.saveDailyChallengeProgress(progress);
+      if (progress >= challenge.target && !SaveManager.isDailyChallengeCompleted()) {
+        SaveManager.setDailyChallengeCompleted(true);
+        awardDailyChallengeReward();
+      }
+    }
+
     final isTrial = currentLevelConfig?.id.endsWith('_5') ?? false;
 
     List<StoryEntry> entries = [];
@@ -516,6 +559,11 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
           // Save backstory unlock count
           final count = backstory.unlockedEntries.length;
           SaveManager.saveUnlockedBackstory(hero.heroName, count);
+
+          // Check backstory seeker achievement
+          if (count >= 3) {
+            unlockAchievement('backstory_unlock');
+          }
         } else {
           entries.add(StoryEntry(
             speakerName: 'System',
@@ -592,6 +640,9 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
     activeIndicator.position = Vector2(0, -newHero.size.y / 2 - 10);
     newHero.add(activeIndicator);
 
+    // Save last played hero id
+    SaveManager.saveLastPlayedHeroId(newHero.heroName);
+
     // 4. Smoothly shift camera to new active hero
     camera.follow(newHero);
   }
@@ -643,9 +694,18 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
     gameState = GameState.playing;
     paused = false;
     hasPlayedTransformation = false;
+    hasUsedPowerThisLevel = false;
+    hasTakenDamageThisLevel = false;
     overlays.remove('game_over');
     overlays.remove('level_complete');
     overlays.remove('pause');
+
+    // Save last played hero id
+    if (config.heroId == 'team') {
+      SaveManager.saveLastPlayedHeroId('dragon');
+    } else {
+      SaveManager.saveLastPlayedHeroId(config.heroId);
+    }
 
     await parallaxBackground.changeLevelBackground(config.backgroundAssetPath);
 
@@ -799,6 +859,109 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
             text: 'Entering Level: ${config.displayName}',
           ),
         ]);
+      }
+    }
+  }
+
+  void onEnemyDefeated(EnemyVariant variant) {
+    // 1. Award XP to the active hero
+    awardXp(CombatConstants.enemyXpAward);
+
+    // 2. Increment total enemy deaths statistic
+    final totalDeaths = SaveManager.getEnemyDeaths() + 1;
+    SaveManager.saveEnemyDeaths(totalDeaths);
+
+    // 3. Track Daily Challenge progress for "defeat_20_enemies"
+    final challengeId = SaveManager.getCurrentChallengeId();
+    if (challengeId == 'defeat_20_enemies') {
+      final challenge = DailyChallenge.getChallengeById(challengeId);
+      final progress = SaveManager.getDailyChallengeProgress() + 1;
+      SaveManager.saveDailyChallengeProgress(progress);
+      if (progress >= challenge.target && !SaveManager.isDailyChallengeCompleted()) {
+        SaveManager.setDailyChallengeCompleted(true);
+        awardDailyChallengeReward();
+      }
+    }
+
+    // 4. Track boss kills achievement
+    if (variant == EnemyVariant.boss) {
+      final killedBosses = SaveManager._prefs?.getStringList('killed_bosses') ?? [];
+      final bossId = currentLevelConfig?.id ?? 'generic_boss';
+      if (!killedBosses.contains(bossId)) {
+        killedBosses.add(bossId);
+        SaveManager._prefs?.setStringList('killed_bosses', killedBosses);
+      }
+      if (killedBosses.length >= 5) {
+        unlockAchievement('all_bosses');
+      }
+
+      // Check Daily Challenge progress for "defeat_boss_no_power"
+      if (challengeId == 'defeat_boss_no_power' && !hasUsedPowerThisLevel) {
+        SaveManager.setDailyChallengeCompleted(true);
+        awardDailyChallengeReward();
+      }
+    }
+
+    // 5. Check achievements for kills count
+    if (totalDeaths >= 50) {
+      unlockAchievement('defeat_50');
+    }
+    if (totalDeaths >= 150) {
+      unlockAchievement('defeat_150');
+    }
+  }
+
+  void awardXp(int amount) {
+    if (heroes.isEmpty) return;
+    final hero = activeHero;
+    final prog = SaveManager.getHeroProgress(hero.heroName);
+    final leveledUp = prog.addXp(amount);
+    SaveManager.saveHeroProgress(prog);
+
+    if (leveledUp) {
+      hero.onLevelUp();
+
+      // Check level achievements
+      if (prog.level >= 5) {
+        unlockAchievement('reach_level_5');
+      }
+      if (prog.level >= 10) {
+        unlockAchievement('reach_level_10');
+      }
+    }
+  }
+
+  void awardDailyChallengeReward() {
+    final lastPlayed = SaveManager.getLastPlayedHeroId();
+    final prog = SaveManager.getHeroProgress(lastPlayed);
+    final leveledUp = prog.addXp(CombatConstants.dailyChallengeXpAward);
+    SaveManager.saveHeroProgress(prog);
+
+    unlockAchievement('daily_completed');
+
+    if (buildContext != null) {
+      ScaffoldMessenger.of(buildContext!).showSnackBar(
+        SnackBar(
+          content: Text(
+            'DAILY CHALLENGE COMPLETED! +${CombatConstants.dailyChallengeXpAward} XP awarded to ${lastPlayed.toUpperCase()}',
+            style: GoogleFonts.pressStart2p(fontSize: 8, color: Colors.black),
+          ),
+          backgroundColor: const Color(0xFF00FFCC),
+        ),
+      );
+    }
+  }
+
+  void unlockAchievement(String id) {
+    final unlocked = SaveManager.getUnlockedAchievements();
+    if (!unlocked.contains(id)) {
+      unlocked.add(id);
+      SaveManager.saveUnlockedAchievements(unlocked);
+
+      final list = Achievement.getAchievements();
+      final ach = list.firstWhere((a) => a.id == id);
+      if (buildContext != null) {
+        NotificationToast.showAchievement(buildContext!, ach.title, ach.description);
       }
     }
   }

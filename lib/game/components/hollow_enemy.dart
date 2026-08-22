@@ -302,6 +302,9 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
       _deathTimer = 0.0;
       paint.colorFilter = null; // Clear color filters immediately
       FlameAudio.play('enemy_death.wav', volume: SaveManager.getSfxVolume());
+      
+      // Hook: notify game of defeat for XP, daily challenges, and achievements
+      game.onEnemyDefeated(variant);
     }
   }
 
@@ -312,13 +315,13 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     if (other is MeleeStrike) {
       _takeDamage(CombatConstants.basicAttackDamage, other);
     } else if (other is PlasmaShockwave) {
-      _takeDamage(CombatConstants.plasmaDamage, other);
+      _takeDamage(other.damage, other);
     } else if (other is SeismicSlam) {
-      _takeDamage(CombatConstants.seismicDamage, other);
+      _takeDamage(other.damage, other);
     } else if (other is TemporalWave) {
-      _takeDamage(CombatConstants.temporalDamage, other);
+      _takeDamage(other.damage, other);
     } else if (other is WaterBlade) {
-      _takeDamage(CombatConstants.waterBladeDamage, other);
+      _takeDamage(other.damage, other);
     }
   }
 }

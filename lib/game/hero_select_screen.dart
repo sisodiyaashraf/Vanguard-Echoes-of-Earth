@@ -86,6 +86,30 @@ class HeroSelectScreen extends StatelessWidget {
           ),
         ),
         centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1E222B),
+                side: const BorderSide(color: Color(0xFF00FFCC), width: 1.5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () => Navigator.pushNamed(context, '/skills'),
+              icon: const Icon(Icons.bolt, color: Color(0xFF00FFCC), size: 16),
+              label: Text(
+                'SKILLS',
+                style: GoogleFonts.pressStart2p(
+                  color: const Color(0xFF00FFCC),
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: Center(
         child: Padding(
