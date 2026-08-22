@@ -68,6 +68,7 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
 
   @override
   Future<void> onLoad() async {
+    priority = 3;
     await super.onLoad();
     size = Vector2.all(128);
     anchor = Anchor.center;
@@ -214,6 +215,12 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
       }
 
       if (position.x + halfWidth > groundLeft && position.x - halfWidth < groundRight) {
+        if (isGrounded && velocity.y == 0) {
+          position.y = groundTop - halfHeight + groundContactOffset;
+          onAnyPlatform = true;
+          break;
+        }
+
         final visualFeetY = position.y + halfHeight - groundContactOffset;
         if (velocity.y >= 0 &&
             visualFeetY >= groundTop &&
