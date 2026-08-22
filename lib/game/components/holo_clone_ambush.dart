@@ -5,12 +5,15 @@ import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
 
 class HoloClone extends SpriteAnimationComponent with HasGameReference<VanguardGame> {
   double _elapsedTime = 0.0;
-  final double _duration = CombatConstants.holoCloneDuration;
+  final double _duration;
+  final double durationMultiplier;
 
   HoloClone({
     required Vector2 spawnPosition,
     required double scaleX,
-  }) : super(
+    this.durationMultiplier = 1.0,
+  })  : _duration = CombatConstants.holoCloneDuration * durationMultiplier,
+        super(
           position: spawnPosition,
           size: Vector2.all(128),
           anchor: Anchor.center,
@@ -50,12 +53,13 @@ class HoloClone extends SpriteAnimationComponent with HasGameReference<VanguardG
 }
 
 // Spawns two static HoloClones on either side of Kitsune
-void spawnHoloCloneAmbush(VanguardGame game, Vector2 heroPosition, double heroScaleX) {
+void spawnHoloCloneAmbush(VanguardGame game, Vector2 heroPosition, double heroScaleX, {double durationMultiplier = 1.0}) {
   // Left clone offset
   game.world.add(
     HoloClone(
       spawnPosition: heroPosition + Vector2(-60.0, 0.0),
       scaleX: heroScaleX,
+      durationMultiplier: durationMultiplier,
     ),
   );
 
@@ -64,6 +68,7 @@ void spawnHoloCloneAmbush(VanguardGame game, Vector2 heroPosition, double heroSc
     HoloClone(
       spawnPosition: heroPosition + Vector2(60.0, 0.0),
       scaleX: heroScaleX,
+      durationMultiplier: durationMultiplier,
     ),
   );
 }

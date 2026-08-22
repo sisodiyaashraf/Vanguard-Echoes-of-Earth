@@ -6,11 +6,16 @@ import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
 class SeismicSlam extends SpriteComponent with HasGameReference<VanguardGame> {
   double _elapsedTime = 0.0;
   final double _duration = CombatConstants.seismicDuration;
-  final Vector2 _targetSize = Vector2(160, 160);
+  late final Vector2 _targetSize;
+  final int damage;
+  final double sizeMultiplier;
 
   SeismicSlam({
     required Vector2 spawnPosition,
-  }) : super(
+    this.damage = CombatConstants.seismicDamage,
+    this.sizeMultiplier = 1.0,
+  })  : _targetSize = Vector2(160 * sizeMultiplier, 160 * sizeMultiplier),
+        super(
           position: spawnPosition,
           anchor: Anchor.bottomCenter,
           priority: 4,

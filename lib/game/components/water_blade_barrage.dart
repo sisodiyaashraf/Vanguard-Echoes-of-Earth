@@ -6,10 +6,12 @@ import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
 class WaterBlade extends SpriteComponent with HasGameReference<VanguardGame> {
   final Vector2 velocity;
   double _elapsedTime = 0.0;
+  final int damage;
 
   WaterBlade({
     required this.velocity,
     required Vector2 spawnPosition,
+    this.damage = CombatConstants.waterBladeDamage,
   }) : super(
           position: spawnPosition,
           size: Vector2(48, 48), // Small agile projectile
@@ -53,7 +55,7 @@ class WaterBlade extends SpriteComponent with HasGameReference<VanguardGame> {
 }
 
 // Spawns 3 water blades in a spread pattern
-void spawnWaterBladeBarrage(VanguardGame game, Vector2 startPosition, double direction) {
+void spawnWaterBladeBarrage(VanguardGame game, Vector2 startPosition, double direction, {int damage = CombatConstants.waterBladeDamage}) {
   final speed = CombatConstants.waterBladeSpeed;
   
   // 1. Straight blade
@@ -61,6 +63,7 @@ void spawnWaterBladeBarrage(VanguardGame game, Vector2 startPosition, double dir
     WaterBlade(
       velocity: Vector2(direction * speed, 0),
       spawnPosition: startPosition.clone(),
+      damage: damage,
     ),
   );
 
@@ -69,6 +72,7 @@ void spawnWaterBladeBarrage(VanguardGame game, Vector2 startPosition, double dir
     WaterBlade(
       velocity: Vector2(direction * speed, -80),
       spawnPosition: startPosition.clone(),
+      damage: damage,
     ),
   );
 
@@ -77,10 +81,7 @@ void spawnWaterBladeBarrage(VanguardGame game, Vector2 startPosition, double dir
     WaterBlade(
       velocity: Vector2(direction * speed, 80),
       spawnPosition: startPosition.clone(),
+      damage: damage,
     ),
   );
-
-  // Automatically remove them using their own lifetime manager component or schedule
-  // Let's make each blade remove itself after its lifetime
-  // Inside WaterBlade.update, we can easily track lifetime!
 }
