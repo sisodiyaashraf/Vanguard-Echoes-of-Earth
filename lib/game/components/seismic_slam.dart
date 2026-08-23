@@ -1,7 +1,9 @@
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
+import 'dart:ui';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
+import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 
 class SeismicSlam extends SpriteComponent with HasGameReference<VanguardGame> {
   double _elapsedTime = 0.0;
@@ -53,5 +55,17 @@ class SeismicSlam extends SpriteComponent with HasGameReference<VanguardGame> {
     // Proportional growth/expansion outward
     final progress = (_elapsedTime / _duration).clamp(0.0, 1.0);
     size = _targetSize * progress;
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+    if (SaveManager.isHighContrastVfx()) {
+      final borderPaint = Paint()
+        ..color = const Color(0xFFFFFF00) // Neon Yellow border
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4.0;
+      canvas.drawRect(size.toRect(), borderPaint);
+    }
   }
 }

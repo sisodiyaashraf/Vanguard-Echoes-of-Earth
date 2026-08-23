@@ -1,7 +1,9 @@
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
+import 'dart:ui';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
+import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 
 class WaterBlade extends SpriteComponent with HasGameReference<VanguardGame> {
   final Vector2 velocity;
@@ -50,6 +52,18 @@ class WaterBlade extends SpriteComponent with HasGameReference<VanguardGame> {
     _elapsedTime += dt;
     if (_elapsedTime >= CombatConstants.waterBladeLifetime) {
       removeFromParent();
+    }
+  }
+
+  @override
+  void render(Canvas canvas) {
+    super.render(canvas);
+    if (SaveManager.isHighContrastVfx()) {
+      final borderPaint = Paint()
+        ..color = const Color(0xFFFF00FF) // Neon Magenta border
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4.0;
+      canvas.drawRect(size.toRect(), borderPaint);
     }
   }
 }
