@@ -3,6 +3,7 @@ import 'package:flame_audio/flame_audio.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/components/hollow_boss.dart';
 import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
+import 'package:vanguard_echoes_of_earth/game/core/game_state.dart';
 import 'package:vanguard_echoes_of_earth/game/story/story_entry.dart';
 import 'package:vanguard_echoes_of_earth/game/modes/boss_rush_config.dart';
 

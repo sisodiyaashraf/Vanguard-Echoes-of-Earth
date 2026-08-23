@@ -13,6 +13,7 @@ import 'package:vanguard_echoes_of_earth/game/components/seismic_slam.dart';
 import 'package:vanguard_echoes_of_earth/game/components/temporal_wave.dart';
 import 'package:vanguard_echoes_of_earth/game/components/water_blade_barrage.dart';
 import 'package:vanguard_echoes_of_earth/game/components/platform.dart';
+import 'package:vanguard_echoes_of_earth/game/components/synergy/synergy_attacks.dart';
 import 'package:vanguard_echoes_of_earth/game/components/element_particle.dart';
 import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 
@@ -33,6 +34,9 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
   double _contactDamageCooldownTimer = 0.0;
 
   bool get isHurt => _hurtTimer > 0;
+
+  double _burnTintTimer = 0.0;
+  double _slowTimer = 0.0;
 
   late final RectangleHitbox _bodyHitbox;
 
@@ -167,6 +171,19 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
       return;
     }
 
+    if (_burnTintTimer > 0) {
+      _burnTintTimer = max(0.0, _burnTintTimer - dt);
+      if (_hurtTimer <= 0.0) {
+        paint.colorFilter = _burnTintTimer > 0
+            ? const ColorFilter.mode(Color(0xE5FF5722), BlendMode.colorBurn)
+            : null;
+      }
+    }
+
+    if (_slowTimer > 0) {
+      _slowTimer = max(0.0, _slowTimer - dt);
+    }
+
     // Apply gravity
     velocity.y += PhysicsConstants.gravity * dt;
     position.y += velocity.y * dt;
@@ -207,13 +224,16 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
     final toHero = hero.position - position;
     final distance = toHero.length;
 
-    if (distance > aggroRange) {
+    final currentAggro = game.obscuredTimeRemaining > 0 ? 50.0 : aggroRange;
+
+    if (distance > currentAggro) {
       current = EnemyAnimState.idle;
       velocity.x = 0.0;
     } else if (distance > attackRange) {
       current = EnemyAnimState.chase;
       final directionX = toHero.x.sign;
-      velocity.x = directionX * speed;
+      final currentSpeed = _slowTimer > 0 ? speed * 0.4 : speed;
+      velocity.x = directionX * currentSpeed;
       position.x += velocity.x * dt;
 
       if (velocity.x < 0 && scale.x > 0) {
@@ -322,6 +342,18 @@ class HollowEnemy extends SpriteAnimationGroupComponent<EnemyAnimState>
       _takeDamage(other.damage, other);
     } else if (other is WaterBlade) {
       _takeDamage(other.damage, other);
+    } else if (other is SteamBurst) {
+      _takeDamage(other.damage, other);
+    } else if (other is AgedQuake) {
+      _takeDamage(other.damage, other);
+    } else if (other is MirageClone) {
+      _takeDamage(other.damage, other);
+    } else if (other is MoltenImpact) {
+      _takeDamage(other.damage, other);
+      _burnTintTimer = 2.0;
+    } else if (other is TimePhantom) {
+      _takeDamage(other.damage, other);
+      _slowTimer = 3.0;
     }
   }
 }

@@ -10,24 +10,24 @@ class SurvivalConfig extends LevelConfig {
           heroId: 'team', // Survival mode launches in team squad mode by default!
           backgroundAssetPath: 'backgrounds/cyberpunk_bg.png',
           levelSize: Vector2(2400, 600),
-          platforms: const [
+          platforms: [
             // Bottom Main Floor
             PlatformData(
-              position: Offset(0, 480),
-              size: Offset(2400, 120),
+              position: Vector2(0, 480),
+              size: Vector2(2400, 120),
             ),
             // Multi-level Ledges for tactical play
             PlatformData(
-              position: Offset(300, 320),
-              size: Offset(400, 30),
+              position: Vector2(300, 320),
+              size: Vector2(400, 30),
             ),
             PlatformData(
-              position: Offset(1700, 320),
-              size: Offset(400, 30),
+              position: Vector2(1700, 320),
+              size: Vector2(400, 30),
             ),
             PlatformData(
-              position: Offset(900, 200),
-              size: Offset(600, 30),
+              position: Vector2(900, 200),
+              size: Vector2(600, 30),
             ),
           ],
         );
