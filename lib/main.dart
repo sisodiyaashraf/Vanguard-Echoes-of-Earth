@@ -29,6 +29,15 @@ class MainApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
       initialRoute: '/',
+      builder: (context, child) {
+        final isLarger = SaveManager.isLargerText();
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(isLarger ? 1.35 : 1.0),
+          ),
+          child: child!,
+        );
+      },
       routes: {
         '/': (context) => const MainMenuScreen(),
         '/settings': (context) => const SettingsScreen(),

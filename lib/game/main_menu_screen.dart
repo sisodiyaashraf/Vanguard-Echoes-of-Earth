@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 import 'package:vanguard_echoes_of_earth/game/progression/daily_challenge.dart';
+import 'package:vanguard_echoes_of_earth/game/modes/survival_config.dart';
+import 'package:vanguard_echoes_of_earth/game/core/localization.dart';
 
 class MainMenuScreen extends StatelessWidget {
   const MainMenuScreen({super.key});
@@ -109,15 +111,52 @@ class MainMenuScreen extends StatelessWidget {
                         // Buttons
                         _buildMenuButton(
                           context,
-                          'PLAY',
+                          AppLocalizations.translate('menu_play'),
                           const Color(0xFF00FFCC),
                           Colors.black,
                           () => Navigator.pushNamed(context, '/hero-select'),
                         ),
                         const SizedBox(height: 12),
+                        // Boss Rush button
                         _buildMenuButton(
                           context,
-                          'ACHIEVEMENTS',
+                          SaveManager.isBossRushUnlocked()
+                              ? AppLocalizations.translate('menu_boss_rush')
+                              : '${AppLocalizations.translate('menu_boss_rush')} (${AppLocalizations.translate('menu_locked')})',
+                          SaveManager.isBossRushUnlocked() ? const Color(0xFFFF9800) : Colors.white10,
+                          SaveManager.isBossRushUnlocked() ? Colors.black : Colors.white24,
+                          () {
+                            if (SaveManager.isBossRushUnlocked()) {
+                              Navigator.pushNamed(context, '/hero-select', arguments: 'boss_rush');
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'LOCKED: CLEAR ALL 5 CAMPAIGN BOSSES TO PLAY!',
+                                    style: GoogleFonts.pressStart2p(fontSize: 8, color: Colors.black),
+                                  ),
+                                  backgroundColor: const Color(0xFFFF5252),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        // Survival button
+                        _buildMenuButton(
+                          context,
+                          AppLocalizations.translate('menu_survival'),
+                          const Color(0xFF9C27B0),
+                          Colors.white,
+                          () {
+                            final config = SurvivalConfig();
+                            Navigator.pushNamed(context, '/game', arguments: config);
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        _buildMenuButton(
+                          context,
+                          AppLocalizations.translate('menu_achievements'),
                           Colors.white,
                           Colors.black,
                           () => Navigator.pushNamed(context, '/achievements'),
@@ -125,7 +164,7 @@ class MainMenuScreen extends StatelessWidget {
                         const SizedBox(height: 12),
                         _buildMenuButton(
                           context,
-                          'SETTINGS',
+                          AppLocalizations.translate('menu_settings'),
                           Colors.white,
                           Colors.black,
                           () => Navigator.pushNamed(context, '/settings'),
@@ -134,7 +173,7 @@ class MainMenuScreen extends StatelessWidget {
                           const SizedBox(height: 12),
                           _buildMenuButton(
                             context,
-                            'QUIT',
+                            AppLocalizations.translate('menu_quit'),
                             Colors.white10,
                             Colors.white70,
                             () => SystemNavigator.pop(),
