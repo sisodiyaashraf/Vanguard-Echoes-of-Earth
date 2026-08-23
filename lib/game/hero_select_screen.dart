@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
+import 'package:vanguard_echoes_of_earth/game/modes/boss_rush_config.dart';
+import 'package:vanguard_echoes_of_earth/game/core/localization.dart';
 
 class HeroOption {
   final String id;
@@ -67,6 +70,13 @@ class HeroSelectScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mode = ModalRoute.of(context)?.settings.arguments as String? ?? 'campaign';
+    final isBossRush = mode == 'boss_rush';
+
+    final displayedOptions = isBossRush
+        ? options.where((o) => o.id != 'team').toList()
+        : options;
+
     return Scaffold(
       backgroundColor: const Color(0xFF111218),
       appBar: AppBar(
@@ -77,7 +87,9 @@ class HeroSelectScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'SELECT CAMPAIGN',
+          isBossRush
+              ? AppLocalizations.translate('menu_boss_rush')
+              : AppLocalizations.translate('skills_choose_hero'),
           style: GoogleFonts.pressStart2p(
             color: const Color(0xFF00FFCC),
             fontSize: 14,
@@ -125,16 +137,25 @@ class HeroSelectScreen extends StatelessWidget {
                 mainAxisSpacing: 16,
                 childAspectRatio: 1.2,
               ),
-              itemCount: options.length,
+              itemCount: displayedOptions.length,
               itemBuilder: (context, index) {
-                final opt = options[index];
+                final opt = displayedOptions[index];
                 return GestureDetector(
                   onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/level-select',
-                      arguments: opt.id,
-                    );
+                    if (isBossRush) {
+                      final config = BossRushConfig(heroId: opt.id);
+                      Navigator.pushNamed(
+                        context,
+                        '/game',
+                        arguments: config,
+                      );
+                    } else {
+                      Navigator.pushNamed(
+                        context,
+                        '/level-select',
+                        arguments: opt.id,
+                      );
+                    }
                   },
                   child: Container(
                     decoration: BoxDecoration(
