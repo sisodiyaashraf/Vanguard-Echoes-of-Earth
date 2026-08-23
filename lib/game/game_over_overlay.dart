@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
+import 'package:vanguard_echoes_of_earth/game/core/localization.dart';
 
 class GameOverOverlay extends StatelessWidget {
   final VanguardGame game;
@@ -9,6 +7,8 @@ class GameOverOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isSurvival = game.currentLevelConfig?.id == 'survival';
+
     return Material(
       color: Colors.black.withValues(alpha: 0.85),
       child: Center(
@@ -40,7 +40,7 @@ class GameOverOverlay extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'MISSION FAILED',
+                isSurvival ? 'SURVIVAL OVER' : AppLocalizations.translate('clear_failed'),
                 style: GoogleFonts.pressStart2p(
                   color: const Color(0xFFFF5252),
                   fontSize: 14,
@@ -56,8 +56,16 @@ class GameOverOverlay extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Your active hero was defeated.',
+                isSurvival
+                    ? 'WAVES SURVIVED: ${game.survivalWavesSurvived}\nENEMIES DEFEATED: ${game.survivalEnemiesDefeated}'
+                    : 'Your active hero was defeated.',
                 style: GoogleFonts.vt323(
+                  color: Colors.white70,
+                  fontSize: 16,
+                  letterSpacing: 1.0,
+                ),
+                textAlign: TextAlign.center,
+              ),
                   color: Colors.white70,
                   fontSize: 14,
                   letterSpacing: 1.0,

@@ -298,6 +298,74 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
                 ),
               ),
             ),
+          if (widget.game.isBossRush)
+            Positioned(
+              top: 16,
+              left: MediaQuery.of(context).size.width / 2 - 80,
+              child: SafeArea(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFFF9800), width: 1.5),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.timer, color: Color(0xFFFF9800), size: 14),
+                      const SizedBox(width: 6),
+                      Text(
+                        'TIME: ${widget.game.bossRushElapsedTime.toStringAsFixed(1)}s',
+                        style: GoogleFonts.pressStart2p(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          if (widget.game.isSurvival)
+            Positioned(
+              top: 16,
+              right: 16,
+              child: SafeArea(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFF9C27B0), width: 1.5),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'WAVE: ${widget.game.survivalWavesSurvived}',
+                        style: GoogleFonts.pressStart2p(
+                          color: const Color(0xFF00FFCC),
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'KILLS: ${widget.game.survivalEnemiesDefeated}',
+                        style: GoogleFonts.pressStart2p(
+                          color: Colors.white70,
+                          fontSize: 7,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       );
   }
