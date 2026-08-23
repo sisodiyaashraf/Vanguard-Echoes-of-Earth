@@ -586,6 +586,11 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
   void cycleHero() {
     // 1. Deactivate old active hero and reset its inputs/velocity to stop moving
     final oldHero = activeHero;
+    
+    // Record synergy triggers
+    lastSwitchedFromHeroId = oldHero.heroName.toLowerCase();
+    lastSwitchTimestamp = DateTime.now();
+
     oldHero.inputState.reset();
     oldHero.velocity.setZero();
     activeIndicator.removeFromParent();
@@ -661,6 +666,20 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
     overlays.remove('game_over');
     overlays.remove('level_complete');
     overlays.remove('pause');
+
+    // Clean up existing game mode managers
+    final existingManagers = world.children.where((c) => c is BossRushManager || c is SurvivalManager);
+    for (var m in existingManagers.toList()) {
+      m.removeFromParent();
+    }
+
+    // Trigger slow pan and zoom-in cinematic
+    isCameraCutsceneActive = true;
+    cameraCutsceneTimer = 0.0;
+    cameraCutsceneZoomStart = 0.6;
+    cameraCutsceneZoomEnd = 1.0;
+    cameraCutscenePanStart = Vector2(-300, -100);
+    cameraCutscenePanEnd = Vector2.zero();
 
     // Save last played hero id
     if (config.heroId == 'team') {
@@ -822,6 +841,13 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
           ),
         ]);
       }
+    }
+
+    // Spawn game mode managers if active
+    if (config is BossRushConfig) {
+      await world.add(BossRushManager(config));
+    } else if (config is SurvivalConfig) {
+      await world.add(SurvivalManager(config));
     }
   }
 
