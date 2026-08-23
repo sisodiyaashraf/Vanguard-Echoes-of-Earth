@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/core/localization.dart';
 
 class GameOverOverlay extends StatelessWidget {
@@ -66,12 +69,6 @@ class GameOverOverlay extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-                  color: Colors.white70,
-                  fontSize: 14,
-                  letterSpacing: 1.0,
-                ),
-                textAlign: TextAlign.center,
-              ),
               const SizedBox(height: 32),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -88,7 +85,7 @@ class GameOverOverlay extends StatelessWidget {
                   }
                 },
                 child: Text(
-                  'RETRY',
+                  AppLocalizations.translate('clear_retry'),
                   style: GoogleFonts.pressStart2p(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -109,7 +106,7 @@ class GameOverOverlay extends StatelessWidget {
                   Navigator.pop(context);
                 },
                 child: Text(
-                  'LEVEL SELECT',
+                  AppLocalizations.translate('clear_level_select'),
                   style: GoogleFonts.pressStart2p(
                     fontSize: 9,
                     fontWeight: FontWeight.bold,

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/levels/level_registry.dart';
+import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
+import 'package:vanguard_echoes_of_earth/game/core/localization.dart';
 
 class LevelCompleteOverlay extends StatelessWidget {
   final VanguardGame game;
@@ -11,11 +13,14 @@ class LevelCompleteOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentConfig = game.currentLevelConfig;
+    final isBossRush = currentConfig?.id == 'boss_rush';
+
     int nextLevelIndex = -1;
-    if (currentConfig != null) {
+    if (currentConfig != null && !isBossRush) {
       nextLevelIndex = LevelRegistry.levels.indexWhere((l) => l.id == currentConfig.id) + 1;
     }
-    final hasNextLevel = nextLevelIndex > 0 &&
+    final hasNextLevel = !isBossRush &&
+        nextLevelIndex > 0 &&
         nextLevelIndex < LevelRegistry.levels.length &&
         currentConfig != null &&
         LevelRegistry.levels[nextLevelIndex].heroId == currentConfig.heroId;
@@ -51,7 +56,9 @@ class LevelCompleteOverlay extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'MISSION CLEAR',
+                isBossRush
+                    ? AppLocalizations.translate('clear_challenge_complete')
+                    : AppLocalizations.translate('clear_mission_clear'),
                 style: GoogleFonts.pressStart2p(
                   color: const Color(0xFF00FFCC),
                   fontSize: 14,
@@ -64,10 +71,13 @@ class LevelCompleteOverlay extends StatelessWidget {
                     ),
                   ],
                 ),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
-                'Successfully completed:\n"${currentConfig?.displayName ?? 'Mission'}"',
+                isBossRush
+                    ? '${AppLocalizations.translate('clear_time')}: ${game.bossRushElapsedTime.toStringAsFixed(1)}s\n${AppLocalizations.translate('clear_best_time')}: ${SaveManager.getBossRushBestTime(game.activeHero.heroName).toStringAsFixed(1)}s'
+                    : 'Successfully completed:\n"${currentConfig?.displayName ?? 'Mission'}"',
                 style: GoogleFonts.vt323(
                   color: Colors.white,
                   fontSize: 16,
@@ -92,7 +102,7 @@ class LevelCompleteOverlay extends StatelessWidget {
                     game.loadLevel(LevelRegistry.levels[nextLevelIndex]);
                   },
                   child: Text(
-                    'NEXT LEVEL',
+                    AppLocalizations.translate('clear_next_level'),
                     style: GoogleFonts.pressStart2p(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -114,7 +124,9 @@ class LevelCompleteOverlay extends StatelessWidget {
                   Navigator.pop(context);
                 },
                 child: Text(
-                  'LEVEL SELECT',
+                  isBossRush
+                      ? AppLocalizations.translate('clear_back_to_menu')
+                      : AppLocalizations.translate('clear_level_select'),
                   style: GoogleFonts.pressStart2p(
                     fontSize: 9,
                     fontWeight: FontWeight.bold,
