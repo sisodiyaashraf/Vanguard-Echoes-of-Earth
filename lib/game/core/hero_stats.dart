@@ -34,6 +34,11 @@ class HeroStats {
     _currentHealth = (_currentHealth - amount).clamp(0, _maxHealth);
   }
 
+  void heal(int amount) {
+    if (amount <= 0) return;
+    _currentHealth = (_currentHealth + amount).clamp(0, _maxHealth);
+  }
+
   bool spendEnergy(int amount) {
     if (amount <= 0) return true;
     if (_currentEnergy >= amount) {

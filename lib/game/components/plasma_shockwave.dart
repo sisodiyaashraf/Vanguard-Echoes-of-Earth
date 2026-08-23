@@ -2,6 +2,7 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'dart:ui';
 import 'package:vanguard_echoes_of_earth/game/core/combat_constants.dart';
+import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 
 class PlasmaShockwave extends PositionComponent {
   final double direction; // +1.0 for right, -1.0 for left
@@ -75,10 +76,12 @@ class PlasmaShockwave extends PositionComponent {
 
     canvas.drawPath(crescentPath, fillPaint);
 
+    final isHighContrast = SaveManager.isHighContrastVfx();
+
     // Neon edge highlight
     final strokePaint = Paint()
-      ..color = const Color(0xFFFF8F00)
-      ..strokeWidth = 2.0
+      ..color = isHighContrast ? const Color(0xFFFFFFFF) : const Color(0xFFFF8F00)
+      ..strokeWidth = isHighContrast ? 4.0 : 2.0
       ..style = PaintingStyle.stroke;
     canvas.drawPath(crescentPath, strokePaint);
   }

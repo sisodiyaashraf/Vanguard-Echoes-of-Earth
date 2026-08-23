@@ -172,4 +172,69 @@ class SaveManager {
   static Future<void> saveLastPlayedHeroId(String heroId) async {
     await _prefs?.setString('last_played_hero_id', heroId.toLowerCase());
   }
+
+  // ==========================================
+  // ACCESSIBILITY SETTINGS
+  // ==========================================
+  static bool isHighContrastVfx() {
+    return _prefs?.getBool('acc_high_contrast_vfx') ?? false;
+  }
+
+  static Future<void> setHighContrastVfx(bool value) async {
+    await _prefs?.setBool('acc_high_contrast_vfx', value);
+  }
+
+  static bool isLargerText() {
+    return _prefs?.getBool('acc_larger_text') ?? false;
+  }
+
+  static Future<void> setLargerText(bool value) async {
+    await _prefs?.setBool('acc_larger_text', value);
+  }
+
+  static bool isLeftHanded() {
+    return _prefs?.getBool('acc_left_handed') ?? false;
+  }
+
+  static Future<void> setLeftHanded(bool value) async {
+    await _prefs?.setBool('acc_left_handed', value);
+  }
+
+  // ==========================================
+  // GAME MODES RECORDS
+  // ==========================================
+  static double getBossRushBestTime(String heroName) {
+    final cleanName = heroName.toLowerCase().replaceAll(' ', '_');
+    return _prefs?.getDouble('boss_rush_best_${cleanName}') ?? 0.0;
+  }
+
+  static Future<void> saveBossRushBestTime(String heroName, double time) async {
+    final cleanName = heroName.toLowerCase().replaceAll(' ', '_');
+    await _prefs?.setDouble('boss_rush_best_${cleanName}', time);
+  }
+
+  static int getSurvivalBestWaves() {
+    return _prefs?.getInt('survival_best_waves') ?? 0;
+  }
+
+  static Future<void> saveSurvivalBestWaves(int waves) async {
+    await _prefs?.setInt('survival_best_waves', waves);
+  }
+
+  static int getSurvivalBestEnemies() {
+    return _prefs?.getInt('survival_best_enemies') ?? 0;
+  }
+
+  static Future<void> saveSurvivalBestEnemies(int enemies) async {
+    await _prefs?.setInt('survival_best_enemies', enemies);
+  }
+
+  static bool isBossRushUnlocked() {
+    // Unlocked once all 5 main-campaign bosses are defeated at least once
+    return isLevelCompleted('dragon_5') &&
+           isLevelCompleted('trex_5') &&
+           isLevelCompleted('curator_5') &&
+           isLevelCompleted('shark_5') &&
+           isLevelCompleted('kitsune_5');
+  }
 }
