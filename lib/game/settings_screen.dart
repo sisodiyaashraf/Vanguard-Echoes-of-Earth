@@ -158,7 +158,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: GoogleFonts.vt323(color: Colors.white, fontSize: 16),
                   ),
                   value: highContrastVfx,
-                  activeColor: const Color(0xFF00FFCC),
+                  activeThumbColor: const Color(0xFF00FFCC),
                   onChanged: (val) {
                     setState(() {
                       highContrastVfx = val;
@@ -174,7 +174,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: GoogleFonts.vt323(color: Colors.white, fontSize: 16),
                   ),
                   value: largerText,
-                  activeColor: const Color(0xFF00FFCC),
+                  activeThumbColor: const Color(0xFF00FFCC),
                   onChanged: (val) {
                     setState(() {
                       largerText = val;
@@ -190,7 +190,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: GoogleFonts.vt323(color: Colors.white, fontSize: 16),
                   ),
                   value: leftHanded,
-                  activeColor: const Color(0xFF00FFCC),
+                  activeThumbColor: const Color(0xFF00FFCC),
                   onChanged: (val) {
                     setState(() {
                       leftHanded = val;

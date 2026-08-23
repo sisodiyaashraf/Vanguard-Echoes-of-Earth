@@ -205,12 +205,12 @@ class SaveManager {
   // ==========================================
   static double getBossRushBestTime(String heroName) {
     final cleanName = heroName.toLowerCase().replaceAll(' ', '_');
-    return _prefs?.getDouble('boss_rush_best_${cleanName}') ?? 0.0;
+    return _prefs?.getDouble('boss_rush_best_$cleanName') ?? 0.0;
   }
 
   static Future<void> saveBossRushBestTime(String heroName, double time) async {
     final cleanName = heroName.toLowerCase().replaceAll(' ', '_');
-    await _prefs?.setDouble('boss_rush_best_${cleanName}', time);
+    await _prefs?.setDouble('boss_rush_best_$cleanName', time);
   }
 
   static int getSurvivalBestWaves() {
