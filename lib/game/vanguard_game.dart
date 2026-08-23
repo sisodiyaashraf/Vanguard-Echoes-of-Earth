@@ -44,7 +44,14 @@ import 'package:vanguard_echoes_of_earth/game/components/synergy/synergy_attacks
 
 class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
   final LevelConfig initialLevelConfig;
+  
+  // Touch controls fields
   JoystickComponent? joystick;
+  HudButtonComponent? jumpButton;
+  HudButtonComponent? attackButton;
+  HudButtonComponent? powerButton;
+  HudButtonComponent? swapButton;
+
   GameState gameState = GameState.playing;
   bool hasPlayedTransformation = false;
 
@@ -56,6 +63,43 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
   late List<BaseHero> heroes;
   int activeHeroIndex = 0;
   BaseHero get activeHero => heroes[activeHeroIndex];
+
+  // Game Mode Result Variables
+  int survivalWavesSurvived = 0;
+  int survivalEnemiesDefeated = 0;
+  double bossRushElapsedTime = 0.0;
+
+  // Synergy Tracking Variables
+  String? lastSwitchedFromHeroId;
+  DateTime? lastSwitchTimestamp;
+
+  // Obscured status for Steam Burst combo
+  double obscuredTimeRemaining = 0.0;
+
+  // Cinematic Camera State Variables
+  double cameraCutsceneTimer = 0.0;
+  bool isCameraCutsceneActive = false;
+  double cameraCutsceneZoomStart = 0.6;
+  double cameraCutsceneZoomEnd = 1.0;
+  Vector2 cameraCutscenePanStart = Vector2(-200, 0);
+  Vector2 cameraCutscenePanEnd = Vector2.zero();
+
+  double cameraShakeTimer = 0.0;
+  double cameraShakeIntensity = 8.0;
+
+  // Skip cutscene trigger
+  void skipCutscene() {
+    if (isCameraCutsceneActive) {
+      isCameraCutsceneActive = false;
+      cameraCutsceneTimer = 0.0;
+      camera.viewfinder.zoom = 1.0;
+      camera.follow(activeHero);
+    }
+  }
+
+  // Getters to check active manager components
+  bool get isBossRush => world.children.any((c) => c is BossRushManager);
+  bool get isSurvival => world.children.any((c) => c is SurvivalManager);
 
   VanguardGame({required this.initialLevelConfig});
 
