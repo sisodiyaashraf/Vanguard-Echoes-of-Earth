@@ -7,7 +7,7 @@ class BossRushConfig extends LevelConfig {
       : super(
           id: 'boss_rush',
           displayName: 'BOSS RUSH',
-          backgroundAssetPath: 'backgrounds/cyberpunk_bg.png',
+          backgroundAssetPath: 'backgrounds/urban_tech.png',
           levelSize: Vector2(2000, 600),
           platforms: [
             PlatformData(

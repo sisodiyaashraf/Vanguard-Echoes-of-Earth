@@ -8,7 +8,7 @@ class SurvivalConfig extends LevelConfig {
           id: 'survival',
           displayName: 'SURVIVAL MODE',
           heroId: 'team', // Survival mode launches in team squad mode by default!
-          backgroundAssetPath: 'backgrounds/cyberpunk_bg.png',
+          backgroundAssetPath: 'backgrounds/urban_tech.png',
           levelSize: Vector2(2400, 600),
           platforms: [
             // Bottom Main Floor
