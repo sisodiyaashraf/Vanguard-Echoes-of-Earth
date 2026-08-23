@@ -27,8 +27,11 @@ class ParallaxBackground extends ParallaxComponent<VanguardGame> {
     size = game.size;
 
     if (parallax != null) {
-      // Scroll the background layers proportional to active hero's velocity
-      parallax!.baseVelocity.x = -game.activeHero.velocity.x * 0.12;
+      if (game.heroes.isNotEmpty) {
+        parallax!.baseVelocity.x = -game.activeHero.velocity.x * 0.12;
+      } else {
+        parallax!.baseVelocity.x = 0.0;
+      }
     }
   }
 }

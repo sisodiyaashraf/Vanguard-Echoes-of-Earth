@@ -18,20 +18,23 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  late final VanguardGame game;
+  VanguardGame? game;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final config = ModalRoute.of(context)!.settings.arguments as LevelConfig;
-    game = VanguardGame(initialLevelConfig: config);
+    if (game == null) {
+      final config = ModalRoute.of(context)!.settings.arguments as LevelConfig;
+      game = VanguardGame(initialLevelConfig: config);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (game == null) return const SizedBox.shrink();
     return Scaffold(
       body: GameWidget<VanguardGame>(
-        game: game,
+        game: game!,
         overlayBuilderMap: {
           'hud': (context, game) => GameHud(game: game),
           'dialogue': (context, game) => DialogueOverlay(game: game),

@@ -54,7 +54,7 @@ class _GameHudState extends State<GameHud> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.game.isLoaded) {
+    if (!widget.game.isLoaded || widget.game.heroes.isEmpty) {
       return const SizedBox.shrink();
     }
 

@@ -60,7 +60,7 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
   bool hasTakenDamageThisLevel = false;
 
   // Hero Switching State
-  late List<BaseHero> heroes;
+  List<BaseHero> heroes = [];
   int activeHeroIndex = 0;
   BaseHero get activeHero => heroes[activeHeroIndex];
 
@@ -405,6 +405,8 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
   void update(double dt) {
     super.update(dt);
     TutorialController.instance.update(this, dt);
+
+    if (heroes.isEmpty) return;
 
     if (joystick != null) {
       if (isInputGated || paused) {
