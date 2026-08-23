@@ -216,98 +216,8 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
 
     activeIndicator = ActiveIndicator();
 
-    // Create virtual joystick and action buttons for touch devices on the camera viewport
-    joystick = JoystickComponent(
-      knob: CircleComponent(
-        radius: 25,
-        paint: Paint()..color = const Color(0xFF00FFCC).withValues(alpha: 0.5),
-      ),
-      background: CircleComponent(
-        radius: 60,
-        paint: Paint()..color = Colors.black.withValues(alpha: 0.3),
-      ),
-      margin: const EdgeInsets.only(left: 60, bottom: 60),
-    );
-    await camera.viewport.add(joystick!);
-
-    final jumpButton = HudButtonComponent(
-      button: RoundIconButton(
-        sprite: runSprite,
-        radius: 30,
-        backgroundColor: Colors.black.withValues(alpha: 0.5),
-      ),
-      buttonDown: RoundIconButton(
-        sprite: runSprite,
-        radius: 27,
-        backgroundColor: const Color(0xFF00FFCC).withValues(alpha: 0.4),
-      ),
-      margin: const EdgeInsets.only(right: 130, bottom: 180),
-      onPressed: () {
-        activeHero.inputState.jumpPressed = true;
-      },
-    );
-    await camera.viewport.add(jumpButton);
-
-    final attackButton = HudButtonComponent(
-      button: RoundIconButton(
-        sprite: meleeSprite,
-        radius: 35,
-        backgroundColor: Colors.black.withValues(alpha: 0.5),
-      ),
-      buttonDown: RoundIconButton(
-        sprite: meleeSprite,
-        radius: 32,
-        backgroundColor: const Color(0xFF00FFCC).withValues(alpha: 0.4),
-      ),
-      margin: const EdgeInsets.only(right: 40, bottom: 120),
-      onPressed: () {
-        activeHero.inputState.attackPressed = true;
-      },
-    );
-    await camera.viewport.add(attackButton);
-
-    final powerButton = HudButtonComponent(
-      button: RoundIconButton(
-        sprite: plasmaSprite,
-        radius: 30,
-        backgroundColor: Colors.black.withValues(alpha: 0.5),
-      ),
-      buttonDown: RoundIconButton(
-        sprite: plasmaSprite,
-        radius: 27,
-        backgroundColor: const Color(0xFF00FFCC).withValues(alpha: 0.4),
-      ),
-      margin: const EdgeInsets.only(right: 130, bottom: 60),
-      onPressed: () {
-        activeHero.inputState.powerPressed = true;
-      },
-    );
-    await camera.viewport.add(powerButton);
-
-    final swapButton = HudButtonComponent(
-      button: TextButtonComponent(
-        text: 'SWAP',
-        backgroundColor: Colors.black.withValues(alpha: 0.6),
-      ),
-      buttonDown: TextButtonComponent(
-        text: 'SWAP',
-        backgroundColor: const Color(0xFF00FFCC).withValues(alpha: 0.3),
-      ),
-      margin: const EdgeInsets.only(right: 20, top: 20),
-      onPressed: () {
-        if (currentLevelConfig == null || currentLevelConfig!.heroId == 'team') {
-          cycleHero();
-        } else {
-          showDialogue([
-            StoryEntry(
-              speakerName: 'System',
-              text: 'Hero switching is locked for Solo Mission: ${currentLevelConfig!.displayName}.',
-            )
-          ]);
-        }
-      },
-    );
-    await camera.viewport.add(swapButton);
+    // Create virtual controls based on left/right-handed preferences
+    await rebuildControls();
 
     // Initialize Backstories
     backstories = {
@@ -1014,6 +924,194 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
       final ach = list.firstWhere((a) => a.id == id);
       if (buildContext != null) {
         NotificationToast.showAchievement(buildContext!, ach.title, ach.description);
+      }
+    }
+  }
+
+  Future<void> rebuildControls() async {
+    joystick?.removeFromParent();
+    jumpButton?.removeFromParent();
+    attackButton?.removeFromParent();
+    powerButton?.removeFromParent();
+    swapButton?.removeFromParent();
+
+    final isLeft = SaveManager.isLeftHanded();
+
+    joystick = JoystickComponent(
+      knob: CircleComponent(
+        radius: 25,
+        paint: Paint()..color = const Color(0xFF00FFCC).withValues(alpha: 0.5),
+      ),
+      background: CircleComponent(
+        radius: 60,
+        paint: Paint()..color = Colors.black.withValues(alpha: 0.3),
+      ),
+      margin: isLeft
+          ? const EdgeInsets.only(right: 60, bottom: 60)
+          : const EdgeInsets.only(left: 60, bottom: 60),
+    );
+    await camera.viewport.add(joystick!);
+
+    jumpButton = HudButtonComponent(
+      button: RoundIconButton(
+        sprite: runSprite,
+        radius: 30,
+        backgroundColor: Colors.black.withValues(alpha: 0.5),
+      ),
+      buttonDown: RoundIconButton(
+        sprite: runSprite,
+        radius: 27,
+        backgroundColor: const Color(0xFF00FFCC).withValues(alpha: 0.4),
+      ),
+      margin: isLeft
+          ? const EdgeInsets.only(left: 130, bottom: 180)
+          : const EdgeInsets.only(right: 130, bottom: 180),
+      onPressed: () {
+        activeHero.inputState.jumpPressed = true;
+      },
+    );
+    await camera.viewport.add(jumpButton!);
+
+    attackButton = HudButtonComponent(
+      button: RoundIconButton(
+        sprite: meleeSprite,
+        radius: 35,
+        backgroundColor: Colors.black.withValues(alpha: 0.5),
+      ),
+      buttonDown: RoundIconButton(
+        sprite: meleeSprite,
+        radius: 32,
+        backgroundColor: const Color(0xFF00FFCC).withValues(alpha: 0.4),
+      ),
+      margin: isLeft
+          ? const EdgeInsets.only(left: 40, bottom: 120)
+          : const EdgeInsets.only(right: 40, bottom: 120),
+      onPressed: () {
+        activeHero.inputState.attackPressed = true;
+      },
+    );
+    await camera.viewport.add(attackButton!);
+
+    powerButton = HudButtonComponent(
+      button: RoundIconButton(
+        sprite: plasmaSprite,
+        radius: 30,
+        backgroundColor: Colors.black.withValues(alpha: 0.5),
+      ),
+      buttonDown: RoundIconButton(
+        sprite: plasmaSprite,
+        radius: 27,
+        backgroundColor: const Color(0xFF00FFCC).withValues(alpha: 0.4),
+      ),
+      margin: isLeft
+          ? const EdgeInsets.only(left: 130, bottom: 60)
+          : const EdgeInsets.only(right: 130, bottom: 60),
+      onPressed: () {
+        activeHero.inputState.powerPressed = true;
+      },
+    );
+    await camera.viewport.add(powerButton!);
+
+    swapButton = HudButtonComponent(
+      button: TextButtonComponent(
+        text: 'SWAP',
+        backgroundColor: Colors.black.withValues(alpha: 0.6),
+      ),
+      buttonDown: TextButtonComponent(
+        text: 'SWAP',
+        backgroundColor: const Color(0xFF00FFCC).withValues(alpha: 0.3),
+      ),
+      margin: isLeft
+          ? const EdgeInsets.only(left: 20, top: 20)
+          : const EdgeInsets.only(right: 20, top: 20),
+      onPressed: () {
+        if (currentLevelConfig == null || currentLevelConfig!.heroId == 'team') {
+          cycleHero();
+        } else {
+          showDialogue([
+            StoryEntry(
+              speakerName: 'System',
+              text: 'Hero switching is locked for Solo Mission: ${currentLevelConfig!.displayName}.',
+            )
+          ]);
+        }
+      },
+    );
+    await camera.viewport.add(swapButton!);
+  }
+
+  bool isComboAvailable() {
+    if (currentLevelConfig?.heroId != 'team') return false;
+    if (lastSwitchedFromHeroId == null || lastSwitchTimestamp == null) return false;
+
+    final now = DateTime.now();
+    final switchDiff = now.difference(lastSwitchTimestamp!).inMilliseconds / 1000.0;
+    if (switchDiff > 1.5) return false;
+
+    final heroB = activeHero;
+    if (heroB.lastPowerUsedTime == null) return false;
+    final bDiff = now.difference(heroB.lastPowerUsedTime!).inMilliseconds / 1000.0;
+    if (bDiff > 1.5) return false;
+
+    final heroA = heroes.firstWhere((h) => h.heroName.toLowerCase() == lastSwitchedFromHeroId, orElse: () => heroes[0]);
+    if (heroA.lastPowerUsedTime == null) return false;
+    final aDiff = now.difference(heroA.lastPowerUsedTime!).inMilliseconds / 1000.0;
+    if (aDiff > 1.5) return false;
+
+    return true;
+  }
+
+  void triggerSynergyCombo() {
+    final heroB = activeHero;
+    final heroA = heroes.firstWhere((h) => h.heroName.toLowerCase() == lastSwitchedFromHeroId, orElse: () => heroes[0]);
+
+    final cost = 40;
+    final splitCost = cost ~/ 2;
+
+    if (heroA.stats.currentEnergy < splitCost || heroB.stats.currentEnergy < splitCost) {
+      return;
+    }
+
+    heroA.stats.spendEnergy(splitCost);
+    heroB.stats.spendEnergy(splitCost);
+
+    // Set B's power cooldown
+    heroB.powerCooldownRemainingValue = heroB.powerCooldown;
+
+    // Reset synergy switch state
+    lastSwitchedFromHeroId = null;
+    lastSwitchTimestamp = null;
+
+    final nameA = heroA.heroName.toLowerCase();
+    final nameB = heroB.heroName.toLowerCase();
+
+    if ((nameA == 'dragon' && nameB == 'shark') || (nameA == 'shark' && nameB == 'dragon')) {
+      world.add(SteamBurst(position: heroB.position.clone()));
+      world.add(SynergyAnnouncementText(title: 'STEAM BURST!', position: heroB.position.clone() - Vector2(0, 100)));
+    } else if ((nameA == 't-rex' && nameB == 'curator') || (nameA == 'curator' && nameB == 't-rex')) {
+      world.add(AgedQuake(position: heroB.position.clone()));
+      world.add(SynergyAnnouncementText(title: 'AGED QUAKE!', position: heroB.position.clone() - Vector2(0, 100)));
+    } else if ((nameA == 'kitsune' && nameB == 'shark') || (nameA == 'shark' && nameB == 'kitsune')) {
+      world.add(MirageClone(position: heroB.position.clone(), direction: heroB.scale.x.sign));
+      world.add(SynergyAnnouncementText(title: 'MIRAGE TIDE!', position: heroB.position.clone() - Vector2(0, 100)));
+    } else if ((nameA == 'dragon' && nameB == 't-rex') || (nameA == 't-rex' && nameB == 'dragon')) {
+      world.add(MoltenImpact(position: heroB.position.clone()));
+      world.add(SynergyAnnouncementText(title: 'MOLTEN IMPACT!', position: heroB.position.clone() - Vector2(0, 100)));
+    } else {
+      world.add(TimePhantom(position: heroB.position.clone()));
+      world.add(SynergyAnnouncementText(title: 'TIME PHANTOM!', position: heroB.position.clone() - Vector2(0, 100)));
+    }
+  }
+
+  void completeLevelFromManager() {
+    _completeLevel();
+  }
+
+  void cycleToNextLivingHero() {
+    for (int i = 0; i < heroes.length; i++) {
+      cycleHero();
+      if (activeHero.stats.currentHealth > 0) {
+        break;
       }
     }
   }
