@@ -1,5 +1,4 @@
 import 'package:flame/components.dart';
-import 'package:flame_audio/flame_audio.dart';
 import 'package:vanguard_echoes_of_earth/game/vanguard_game.dart';
 import 'package:vanguard_echoes_of_earth/game/components/hollow_boss.dart';
 import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';

@@ -139,14 +139,11 @@ class SurvivalManager extends Component with HasGameReference<VanguardGame> {
     final bestWaves = SaveManager.getSurvivalBestWaves();
     final bestEnemies = SaveManager.getSurvivalBestEnemies();
 
-    bool isNewRecord = false;
     if (currentWave - 1 > bestWaves) {
       SaveManager.saveSurvivalBestWaves(currentWave - 1);
-      isNewRecord = true;
     }
     if (enemiesDefeatedThisRun > bestEnemies) {
       SaveManager.saveSurvivalBestEnemies(enemiesDefeatedThisRun);
-      isNewRecord = true;
     }
 
     game.survivalWavesSurvived = currentWave - 1;
