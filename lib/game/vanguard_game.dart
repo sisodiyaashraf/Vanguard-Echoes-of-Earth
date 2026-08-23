@@ -34,6 +34,13 @@ import 'package:vanguard_echoes_of_earth/game/progression/achievement.dart';
 import 'package:vanguard_echoes_of_earth/game/progression/daily_challenge.dart';
 import 'package:vanguard_echoes_of_earth/game/progression/notification_toast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:math';
+import 'dart:ui' show lerpDouble;
+import 'package:vanguard_echoes_of_earth/game/modes/boss_rush_config.dart';
+import 'package:vanguard_echoes_of_earth/game/modes/survival_config.dart';
+import 'package:vanguard_echoes_of_earth/game/modes/boss_rush_manager.dart';
+import 'package:vanguard_echoes_of_earth/game/modes/survival_manager.dart';
+import 'package:vanguard_echoes_of_earth/game/components/synergy/synergy_attacks.dart';
 
 class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasCollisionDetection {
   final LevelConfig initialLevelConfig;

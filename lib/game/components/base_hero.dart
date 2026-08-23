@@ -35,6 +35,12 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
   double _transformationTimeRemaining = 0.0;
   double _meleeHitboxDelay = 0.0;
 
+  // Synergy tracking
+  DateTime? lastPowerUsedTime;
+
+  // Setter for synergy combo cooldown
+  set powerCooldownRemainingValue(double val) => _powerCooldownRemaining = val;
+
   // Coyote time & input buffering
   double _coyoteTimeRemaining = 0.0;
   double _jumpBufferTimeRemaining = 0.0;
@@ -449,8 +455,15 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
 
     if (_transformationTimeRemaining > 0.0) {
       _transformationTimeRemaining -= dt;
-      if (_transformationTimeRemaining < 0.0) {
+      if (_transformationTimeRemaining <= 0.0) {
         _transformationTimeRemaining = 0.0;
+        // Zoom camera back out
+        game.isCameraCutsceneActive = true;
+        game.cameraCutsceneTimer = 0.0;
+        game.cameraCutsceneZoomStart = 1.5;
+        game.cameraCutsceneZoomEnd = 1.0;
+        game.cameraCutscenePanStart = Vector2.zero();
+        game.cameraCutscenePanEnd = Vector2.zero();
       }
     }
   }
@@ -466,9 +479,16 @@ abstract class BaseHero extends SpriteAnimationGroupComponent<HeroState>
   void _firePower() {
     if (_powerCooldownRemaining > 0.0) return;
 
+    // Check synergy combo
+    if (game.isComboAvailable()) {
+      game.triggerSynergyCombo();
+      return;
+    }
+
     // Check and spend energy
     if (!stats.spendEnergy(powerEnergyCost)) return;
 
+    lastPowerUsedTime = DateTime.now();
     game.hasUsedPowerThisLevel = true;
     spawnPower();
     FlameAudio.play('power.wav', volume: SaveManager.getSfxVolume());
@@ -556,11 +576,11 @@ class LevelUpText extends TextComponent with HasGameReference<VanguardGame> {
   LevelUpText({required super.position}) : super(
     text: 'LEVEL UP!',
     textRenderer: TextPaint(
-      style: const TextStyle(
-        color: Color(0xFF00FFCC),
-        fontSize: 16.0,
+      style: TextStyle(
+        color: const Color(0xFF00FFCC),
+        fontSize: SaveManager.isLargerText() ? 22.0 : 16.0,
         fontWeight: FontWeight.bold,
-        shadows: [
+        shadows: const [
           Shadow(color: Colors.black, blurRadius: 4.0, offset: Offset(2.0, 2.0)),
         ],
       ),
