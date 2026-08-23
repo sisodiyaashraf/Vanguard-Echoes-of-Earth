@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:vanguard_echoes_of_earth/game/core/save_manager.dart';
 import 'package:vanguard_echoes_of_earth/game/modes/boss_rush_config.dart';
 import 'package:vanguard_echoes_of_earth/game/core/localization.dart';
 

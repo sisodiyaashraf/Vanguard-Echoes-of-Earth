@@ -211,8 +211,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onPressed: () async {
                       await SaveManager.setHasSeenTutorial(false);
                       await SaveManager.setHasSeenTeamTutorial(false);
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
                               'TUTORIAL RESET! PLAY ANY LEVEL TO REPLAY.',
@@ -222,7 +222,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             duration: const Duration(seconds: 2),
                           ),
                         );
-                      }
                     },
                     child: Text(
                       'REPLAY TUTORIAL',
