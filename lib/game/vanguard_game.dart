@@ -432,6 +432,31 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
       }
     }
 
+    if (obscuredTimeRemaining > 0) {
+      obscuredTimeRemaining = max(0.0, obscuredTimeRemaining - dt);
+    }
+
+    // Update camera cutscene (Pan and Zoom)
+    if (isCameraCutsceneActive) {
+      cameraCutsceneTimer += dt;
+      final progress = (cameraCutsceneTimer / 2.0).clamp(0.0, 1.0);
+      final currentZoom = lerpDouble(cameraCutsceneZoomStart, cameraCutsceneZoomEnd, progress) ?? 1.0;
+      camera.viewfinder.zoom = currentZoom;
+
+      if (progress >= 1.0) {
+        isCameraCutsceneActive = false;
+        cameraCutsceneTimer = 0.0;
+        camera.follow(activeHero);
+      } else {
+        camera.stop();
+        final panOffset = Vector2(
+          lerpDouble(cameraCutscenePanStart.x, cameraCutscenePanEnd.x, progress) ?? 0.0,
+          lerpDouble(cameraCutscenePanStart.y, cameraCutscenePanEnd.y, progress) ?? 0.0,
+        );
+        camera.viewfinder.position = activeHero.position + panOffset;
+      }
+    }
+
     // Constrain camera viewfinder within level bounds
     if (currentLevelConfig != null) {
       final visibleSize = camera.viewfinder.visibleGameSize ?? Vector2(640, 360);
@@ -446,6 +471,17 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
       camY = camY.clamp(halfHeight, currentLevelConfig!.levelSize.y - halfHeight);
       
       camera.viewfinder.position = Vector2(camX, camY);
+    }
+
+    // Camera shake (applied on top of constraints)
+    if (cameraShakeTimer > 0) {
+      cameraShakeTimer = max(0.0, cameraShakeTimer - dt);
+      final rand = Random();
+      final shakeOffset = Vector2(
+        (rand.nextDouble() - 0.5) * cameraShakeIntensity,
+        (rand.nextDouble() - 0.5) * cameraShakeIntensity,
+      );
+      camera.viewfinder.position += shakeOffset;
     }
   }
 
@@ -539,6 +575,7 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
   }
 
   void advanceDialogue() {
+    skipCutscene();
     if (dialogueQueue.isNotEmpty) {
       currentDialogueNotifier.value = dialogueQueue.removeAt(0);
     } else {
@@ -557,6 +594,20 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
   }
 
   void triggerGameOver() {
+    if (isSurvival) {
+      final manager = world.children.whereType<SurvivalManager>().firstOrNull;
+      if (manager != null && !manager.isGameOver) {
+        final hasLiving = heroes.any((h) => h.stats.currentHealth > 0);
+        if (hasLiving) {
+          cycleToNextLivingHero();
+          return;
+        } else {
+          manager.onDeathGameOver();
+          return;
+        }
+      }
+    }
+
     if (gameState == GameState.gameOver) return;
     gameState = GameState.gameOver;
     paused = true;
@@ -811,6 +862,16 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
             position: Vector2(sp.position.x, sp.position.y),
           );
           await world.add(boss);
+
+          // Trigger cinematic camera shake and boss reveal zoom
+          cameraShakeTimer = 0.8;
+          cameraShakeIntensity = 10.0;
+          isCameraCutsceneActive = true;
+          cameraCutsceneTimer = 0.0;
+          cameraCutsceneZoomStart = 1.0;
+          cameraCutsceneZoomEnd = 1.3;
+          cameraCutscenePanStart = Vector2(300, 0); // pan towards boss
+          cameraCutscenePanEnd = Vector2.zero();
         } else {
           final enemy = HollowEnemy(
             variant: sp.variant,
@@ -854,6 +915,11 @@ class VanguardGame extends FlameGame with HasKeyboardHandlerComponents, HasColli
   void onEnemyDefeated(EnemyVariant variant) {
     // 1. Award XP to the active hero
     awardXp(CombatConstants.enemyXpAward);
+
+    // Track survival mode kills
+    if (isSurvival) {
+      world.children.whereType<SurvivalManager>().firstOrNull?.registerEnemyDefeat();
+    }
 
     // 2. Increment total enemy deaths statistic
     final totalDeaths = SaveManager.getEnemyDeaths() + 1;
